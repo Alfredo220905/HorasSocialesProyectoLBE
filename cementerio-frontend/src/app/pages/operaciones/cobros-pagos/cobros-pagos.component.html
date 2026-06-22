@@ -1,0 +1,70 @@
+<div class="page-container">
+  <div class="header-actions">
+    <button class="btn-back" (click)="volver()">← Volver</button>
+    <div class="filters">
+      <button class="btn-filter" [class.active]="filtro === 'PENDIENTES'" (click)="cambiarFiltro('PENDIENTES')">Pendientes / Vencidos</button>
+      <button class="btn-filter" [class.active]="filtro === 'TODOS'" (click)="cambiarFiltro('TODOS')">Todos los Pagos</button>
+    </div>
+  </div>
+
+  <div class="header-title">
+    <h2>Control de Cobros y Pagos</h2>
+    <p class="subtitle">Gestione el pago de mantenimientos y renovaciones</p>
+  </div>
+
+  <div *ngIf="cargando" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <div *ngIf="!cargando" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Concepto</th>
+          <th>Monto</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="filtro === 'PENDIENTES'">
+          <tr *ngIf="pagosPendientes.length === 0">
+            <td colspan="6" class="text-center">No hay pagos pendientes.</td>
+          </tr>
+          <tr *ngFor="let p of pagosPendientes">
+            <td>#{{ p.id }}</td>
+            <td>{{ p.concepto }}</td>
+            <td class="amount">${{ p.monto }}</td>
+            <td>{{ p.fecha }}</td>
+            <td><span class="status-badge status-pendiente">{{ p.estado }}</span></td>
+            <td>
+              <button class="btn-action btn-pay" (click)="marcarPagado(p)">Registrar Pago</button>
+            </td>
+          </tr>
+        </ng-container>
+
+        <ng-container *ngIf="filtro === 'TODOS'">
+          <tr *ngIf="pagosTodos.length === 0">
+            <td colspan="6" class="text-center">No hay registros de pago.</td>
+          </tr>
+          <tr *ngFor="let p of pagosTodos">
+            <td>#{{ p.id }}</td>
+            <td>{{ p.concepto }}</td>
+            <td class="amount">${{ p.monto }}</td>
+            <td>{{ p.fecha }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="p.estado === 'PAGADO' ? 'status-pagado' : 'status-pendiente'">{{ p.estado }}</span>
+            </td>
+            <td>
+              <button *ngIf="p.estado === 'PENDIENTE'" class="btn-action btn-pay" (click)="marcarPagado(p)">Registrar Pago</button>
+              <span *ngIf="p.estado === 'PAGADO'" class="text-muted">Procesado</span>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>

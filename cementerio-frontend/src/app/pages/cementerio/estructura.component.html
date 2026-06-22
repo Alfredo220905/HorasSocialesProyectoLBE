@@ -1,0 +1,249 @@
+<div class="page-container">
+  <div class="header-section">
+    <h1>Gestión de Estructura</h1>
+    <p>Configure parcelas, lotes y espacios del cementerio</p>
+  </div>
+
+  <div class="grid-layout">
+    <!-- SECCIÓN 1: GENERAR PARCELA MASIVA -->
+    <div class="card">
+      <div class="card-header">
+        <h3>1. Generar Parcela y Lotes</h3>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Seleccionar Cementerio</label>
+          <select [(ngModel)]="selectedCementerioId" (change)="onCementerioChange()">
+            <option [value]="null" disabled selected>Seleccione un cementerio...</option>
+            <option *ngFor="let c of cementerios" [value]="c.id">{{ c.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="selectedCementerioId">
+          <label>Tipo de Sección (Público / Privado)</label>
+          <select [(ngModel)]="selectedSeccionId" (change)="onSeccionChange()">
+            <option [value]="null" disabled selected>Seleccione sección...</option>
+            <option *ngFor="let s of seccionesDisponibles" [value]="s.id">{{ s.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Nombre de la Parcela</label>
+          <input type="text" [(ngModel)]="nuevaParcelaNombre" placeholder="Ej: Sector A, Bloque Rosas...">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Filas</label>
+            <input type="number" [(ngModel)]="generarFilas" min="1">
+          </div>
+          <div class="form-group">
+            <label>Columnas</label>
+            <input type="number" [(ngModel)]="generarColumnas" min="1">
+          </div>
+        </div>
+
+        <!-- Número de Espacios -->
+        <div class="form-group highlight" *ngIf="esPrivado">
+          <label>Espacios por Lote</label>
+          <input type="number" [value]="4" readonly disabled class="fixed-input">
+          <small class="note">Por defecto cada lote cuenta con 4 espacios inmodificables.</small>
+        </div>
+        <div class="form-group" *ngIf="!esPrivado && selectedSeccionId">
+          <label>Espacios por Lote</label>
+          <input type="number" [(ngModel)]="generarEspacios" min="1">
+          <small class="note">Defina cuántos espacios tendrá cada lote en esta parcela.</small>
+        </div>
+
+        <button class="btn-primary" (click)="generarParcela()" [disabled]="!selectedSeccionId || !nuevaParcelaNombre">
+          GENERAR PARCELA
+        </button>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: AÑADIR LOTE INDIVIDUAL -->
+    <div class="card">
+      <div class="card-header">
+        <h3>2. Añadir Lote Individual</h3>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Seleccionar Parcela</label>
+          <select [(ngModel)]="selectedParcelaId" (change)="onParcelaChange()">
+            <option [value]="null" disabled selected>Seleccione parcela...</option>
+            <option *ngFor="let p of parcelas" [value]="p.id">{{ p.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fila (N°)</label>
+            <input type="number" [(ngModel)]="nuevaFila" min="1">
+          </div>
+          <div class="form-group">
+            <label>Columna / Lote N°</label>
+            <input type="number" [(ngModel)]="nuevaColumna" min="1">
+          </div>
+        </div>
+
+        <div class="form-group highlight" *ngIf="esPrivadoLote">
+          <label>Espacios por Lote</label>
+          <input type="number" [value]="4" readonly disabled class="fixed-input">
+          <small class="note">Por defecto cada lote cuenta con 4 espacios inmodificables.</small>
+        </div>
+        <div class="form-group" *ngIf="!esPrivadoLote && selectedParcelaId">
+          <label>Espacios por Lote</label>
+          <input type="number" [(ngModel)]="numEspacios" min="1">
+          <small class="note">Defina la capacidad de espacios de este lote.</small>
+        </div>
+
+        <button class="btn-primary" (click)="crearLote()" [disabled]="!selectedParcelaId">
+          AÑADIR LOTE
+        </button>
+      </div>
+    </div>
+
+  
+
+  <!-- RESUMEN -->
+  <div class="card summary-card" *ngIf="selectedCementerioId">
+    <div class="card-header">
+      <h3>Estado de: {{ selectedCementerioNombre }}</h3>
+    </div>
+    <div class="card-body">
+      <div class="stats-row">
+        <div class="stat-item">
+          <span class="label">Sección:</span>
+          <span class="value badge" *ngIf="selectedSeccionNombre">{{ selectedSeccionNombre }}</span>
+          <span class="value" *ngIf="!selectedSeccionNombre">Sin seleccionar</span>
+        </div>
+        <div class="stat-item">
+          <span class="label">Parcelas:</span>
+          <span class="value">{{ parcelas.length }}</span>
+        </div>
+      </div>
+      
+      <div class="parcelas-list" *ngIf="parcelas.length > 0" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+        <h4 style="margin-bottom: 0.5rem; color: #4b5563; font-size: 1rem;">Parcelas Registradas</h4>
+        <ul style="list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem;">
+          <li *ngFor="let p of parcelas" style="display: flex; flex-direction: column; padding: 0.75rem 1rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 0.5rem;">
+              <span style="font-weight: 500; color: #1f2937;">{{ p.nombre }}</span>
+              <button (click)="pedirEliminarParcela(p)" style="background: none; border: none; cursor: pointer; color: #ef4444; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem;" title="Eliminar Parcela Completa">Eliminar Parcela</button>
+            </div>
+            
+            <div *ngIf="p.criptas && p.criptas.length > 0" style="display: flex; align-items: center; gap: 0.5rem; background: #fff; padding: 0.5rem; border-radius: 4px; border: 1px solid #e5e7eb;">
+              <label style="font-size: 0.875rem; color: #4b5563;">Lotes:</label>
+              <select [(ngModel)]="selectedLotes[p.id]" style="padding: 0.25rem 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; flex-grow: 1; outline: none;">
+                <option *ngFor="let lote of p.criptas" [value]="lote.id">F{{ lote.fila }} C{{ lote.columna }} ({{ lote.espacios?.length || 0 }} espacios)</option>
+              </select>
+              <button (click)="pedirEliminarLote(p)" style="background: #fee2e2; border: 1px solid #f87171; cursor: pointer; color: #ef4444; font-size: 0.875rem; padding: 0.25rem 0.5rem; border-radius: 4px; display: flex; align-items: center; gap: 0.25rem;" title="Eliminar Lote Seleccionado">Borrar Lote</button>
+            </div>
+            <div *ngIf="!p.criptas || p.criptas.length === 0" style="font-size: 0.875rem; color: #6b7280; font-style: italic;">
+              Sin lotes asignados.
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL GENÉRICO -->
+  <div class="modal-overlay" *ngIf="modal.visible" (click)="cerrarModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()"
+         [class.modal-error]="modal.tipo === 'error'"
+         [class.modal-exito]="modal.tipo === 'exito'"
+         [class.modal-confirmar]="modal.tipo === 'confirmar'">
+      <div class="modal-icon" *ngIf="modal.tipo === 'error'">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+      <div class="modal-icon" *ngIf="modal.tipo === 'exito'">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 8 10 16 7 13"/></svg>
+      </div>
+      <div class="modal-icon" *ngIf="modal.tipo === 'confirmar'">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h3 class="modal-title">{{ modal.titulo }}</h3>
+      <p class="modal-msg">{{ modal.mensaje }}</p>
+      <div class="modal-actions">
+        <button class="btn-modal btn-cancel" (click)="cerrarModal()">
+          {{ modal.tipo === 'confirmar' ? 'Cancelar' : 'Cerrar' }}
+        </button>
+        <button class="btn-modal btn-confirm" *ngIf="modal.tipo === 'confirmar'" (click)="confirmarModal()">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL BENEFICIARIOS -->
+  <div class="modal-overlay" *ngIf="beneficiariosModal.visible" (click)="cerrarBeneficiariosModal()">
+    <div class="modal-box modal-wide" (click)="$event.stopPropagation()">
+      <div class="modal-header-row">
+        <h3 class="modal-title">Gestión de Beneficiarios</h3>
+        <button class="btn-close-modal" (click)="cerrarBeneficiariosModal()">X</button>
+      </div>
+
+      <!-- Formulario para agregar -->
+      <div class="ben-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre del Beneficiario</label>
+            <input type="text" [(ngModel)]="beneficiariosModal.nuevoNombre" placeholder="Nombre completo">
+          </div>
+          <div class="form-group">
+            <label>DUI</label>
+            <input type="text" [value]="beneficiariosModal.nuevoDui"
+                   (input)="onBenDuiInput($event, 'nuevoDui')"
+                   placeholder="00000000-0" maxlength="10">
+          </div>
+        </div>
+        <button class="btn-primary btn-sm-full" (click)="agregarBeneficiario()" [disabled]="!beneficiariosModal.nuevoNombre">
+          Agregar Beneficiario
+        </button>
+      </div>
+
+      <!-- Lista de Beneficiarios -->
+      <div class="ben-list-section">
+        <table class="ben-table" *ngIf="beneficiariosModal.lista.length > 0">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>DUI</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ben of beneficiariosModal.lista">
+              <!-- Modo lectura -->
+              <ng-container *ngIf="beneficiariosModal.editandoId !== ben.id">
+                <td>{{ ben.nombre }}</td>
+                <td>{{ ben.dui || 'N/A' }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-action btn-edit" (click)="iniciarEdicionBeneficiario(ben)">Editar</button>
+                    <button class="btn-action btn-delete" (click)="pedirEliminarBeneficiario(ben)">Eliminar</button>
+                  </div>
+                </td>
+              </ng-container>
+              <!-- Modo edición -->
+              <ng-container *ngIf="beneficiariosModal.editandoId === ben.id">
+                <td><input type="text" [(ngModel)]="beneficiariosModal.editNombre" class="inline-input"></td>
+                <td><input type="text" [value]="beneficiariosModal.editDui"
+                           (input)="onBenDuiInput($event, 'editDui')"
+                           class="inline-input" maxlength="10"></td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-action btn-save" (click)="guardarEdicionBeneficiario(ben.id)">Guardar</button>
+                    <button class="btn-action btn-cancel-sm" (click)="cancelarEdicionBeneficiario()">Cancelar</button>
+                  </div>
+                </td>
+              </ng-container>
+            </tr>
+          </tbody>
+        </table>
+        <p class="empty-msg" *ngIf="beneficiariosModal.lista.length === 0">No hay beneficiarios registrados para este lote.</p>
+      </div>
+    </div>
+  </div>
+</div>

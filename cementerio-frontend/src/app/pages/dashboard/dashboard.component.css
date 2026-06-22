@@ -1,0 +1,220 @@
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-color) url('/assets/mapa1.png') center center no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  background-blend-mode: soft-light;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--text-main);
+  transition: all 0.3s ease;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 280px;
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(15px);
+  color: var(--text-main);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 20px var(--shadow-color);
+  border-right: 1px solid var(--border-color);
+}
+
+.sidebar.closed {
+  margin-left: -280px;
+}
+
+.sidebar-header {
+  padding: 2.5rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.sidebar-logo {
+  height: 100px;
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--primary-color);
+  letter-spacing: 0.5px;
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 1.5rem 0;
+  overflow-y: auto;
+}
+
+.menu-section {
+  padding: 1rem 1.5rem 0.5rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+
+.menu-item {
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 4px solid transparent;
+}
+
+.menu-item svg {
+  color: var(--primary-color);
+  opacity: 0.7;
+}
+
+.menu-item:hover {
+  background: rgba(215, 51, 135, 0.05);
+  color: var(--primary-color);
+}
+
+.menu-item.active {
+  background: rgba(215, 51, 135, 0.1);
+  color: var(--primary-color);
+  border-left-color: var(--primary-color);
+  font-weight: 700;
+}
+
+.sidebar-footer {
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.btn-logout {
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: 0.3s;
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.btn-logout:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* MAIN CONTENT */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.top-bar {
+  height: 75px;
+  background: var(--top-bar-bg);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  padding: 0 2.5rem;
+  justify-content: space-between;
+  box-shadow: 0 2px 15px var(--shadow-color);
+  z-index: 999;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.btn-theme {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+}
+
+.btn-theme:hover {
+  background: rgba(215, 51, 135, 0.1);
+  transform: rotate(15deg);
+}
+
+.hamburger {
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: var(--primary-color);
+}
+
+.user-name {
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.user-role {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.page-container {
+  padding: 2.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+  .sidebar {
+    position: fixed;
+    height: 100vh;
+  }
+  
+  .sidebar.closed {
+    margin-left: -280px;
+  }
+
+  .top-bar {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .user-name {
+    display: none;
+  }
+  
+  .page-container {
+    padding: 1.5rem;
+  }
+}

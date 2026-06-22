@@ -1,0 +1,95 @@
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--top-bar-bg);
+  border-bottom: 2px solid var(--primary-color);
+  margin-bottom: 2rem;
+  border-radius: 8px;
+}
+
+.header-container h2 {
+  margin: 0;
+  color: var(--primary-color);
+}
+
+.btn-logout {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+
+.btn-logout:hover {
+  opacity: 0.8;
+}
+
+.form-card {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.form-card h3 {
+  margin-top: 0;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 6px;
+}
+
+.checkbox-label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: normal !important;
+}
+
+.checkbox-label input {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+}
+
+.btn-save {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-save:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-save:active {
+  transform: translateY(1px);
+}

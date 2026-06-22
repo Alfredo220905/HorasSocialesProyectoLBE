@@ -1,0 +1,231 @@
+.resumen-container {
+  padding: 1.5rem;
+  animation: fadeIn 0.4s ease;
+}
+
+.header-section {
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 1rem;
+}
+
+.header-section h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #1e293b;
+}
+
+.subtitle {
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+/* Spinner */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: #64748b;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f1f5f9;
+  border-top-color: #d73387;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  border: 1px solid #f1f5f9;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+}
+
+.icon {
+  font-size: 2.5rem;
+  background: #f8fafc;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+}
+
+.info h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-top: 0.2rem;
+}
+
+.stat-card.primary .icon { background: #fdf2f8; color: #d73387; }
+.stat-card.primary .value { color: #d73387; }
+
+.stat-card.success .icon { background: #ecfdf5; }
+.stat-card.success .value { color: #10b981; }
+
+.stat-card.accent .icon { background: #fffbeb; }
+.stat-card.accent .value { color: #d97706; }
+
+/* Occupancy Bar */
+.section-title {
+  margin: 2rem 0 1rem;
+  border-left: 4px solid #d73387;
+  padding-left: 0.8rem;
+}
+
+.section-title h3 {
+  margin: 0;
+  color: #334155;
+  font-size: 1.3rem;
+}
+
+.occupancy-bar-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  border: 1px solid #f1f5f9;
+}
+
+.occupancy-bar {
+  height: 16px;
+  border-radius: 20px;
+  display: flex;
+  overflow: hidden;
+  background: #f1f5f9;
+  margin-bottom: 1rem;
+}
+
+.occ-fill {
+  height: 100%;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.occ-fill.disponible { background: #10b981; }
+.occ-fill.ocupado { background: #ef4444; }
+.occ-fill.mantenimiento { background: #f59e0b; }
+
+.legend-row {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+  color: #475569;
+  font-weight: 600;
+  flex-wrap: wrap;
+}
+
+.leg { display: flex; align-items: center; gap: 0.5rem; }
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot.green { background: #10b981; }
+.dot.red { background: #ef4444; }
+.dot.orange { background: #f59e0b; }
+
+/* Table Details */
+.table-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th {
+  padding: 1.2rem;
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 1.2rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover { background: #fdf2f8; }
+
+.badge {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: #e0f2fe;
+  color: #0369a1;
+  margin-right: 0.5rem;
+}
+.badge.light {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.owner-cell {
+  font-weight: 700;
+  color: #d73387;
+}
+
+.ben-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #64748b;
+}
+
+.text-muted { color: #94a3b8; font-style: italic; }
+
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: #94a3b8;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

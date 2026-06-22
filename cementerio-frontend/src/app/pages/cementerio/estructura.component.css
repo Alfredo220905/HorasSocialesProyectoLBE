@@ -1,0 +1,241 @@
+.page-container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+.header-section { margin-bottom: 2rem; }
+.header-section h1 { color: var(--primary-color, #d73387); font-size: 2rem; margin: 0; }
+.header-section p { color: var(--text-muted, #6b7280); }
+
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+.card {
+  background: var(--card-bg, #fff);
+  border-radius: 16px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  box-shadow: 0 4px 20px var(--shadow-color, rgba(0,0,0,0.04));
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  background: rgba(215, 51, 135, 0.03);
+}
+.card-header h3 { margin: 0; color: var(--primary-color, #d73387); font-size: 1.1rem; }
+.card-body { padding: 1.5rem; }
+
+.form-group { margin-bottom: 1.2rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main, #1f2937); font-size: 0.85rem; }
+
+input, select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 10px;
+  background: var(--bg-color, #f9fafb);
+  color: var(--text-main, #1f2937);
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color, #d73387);
+  box-shadow: 0 0 0 3px rgba(215, 51, 135, 0.1);
+}
+
+.highlight {
+  background: rgba(215, 51, 135, 0.05);
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px dashed var(--primary-color, #d73387);
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--primary-color, #d73387);
+  color: white;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+}
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover, #bf2d76); transform: translateY(-2px); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.note { color: var(--text-muted, #9ca3af); font-size: 0.75rem; margin-top: 0.4rem; display: block; }
+.badge { background: var(--primary-color, #d73387); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; }
+.stats-row { display: flex; gap: 2rem; flex-wrap: wrap; }
+.stat-item { display: flex; gap: 0.5rem; align-items: center; }
+.stat-item .label { font-weight: 600; color: var(--text-muted, #6b7280); }
+.stat-item .value { font-weight: 800; color: var(--text-main, #111); }
+
+.summary-card { margin-top: 2rem; }
+
+/* --- Modals --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  width: 90%;
+  max-width: 440px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: popIn 0.3s ease;
+}
+.modal-wide {
+  max-width: 650px;
+  text-align: left;
+}
+
+.modal-icon { margin-bottom: 1rem; }
+
+.modal-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.4rem;
+  color: #1e293b;
+}
+.modal-msg {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+}
+
+.btn-modal {
+  padding: 0.7rem 1.8rem;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+.btn-cancel { background: #f1f5f9; color: #475569; }
+.btn-cancel:hover { background: #e2e8f0; }
+.btn-confirm { background: #d73387; color: white; }
+.btn-confirm:hover { background: #bf2d76; }
+
+.modal-error .modal-title { color: #ef4444; }
+.modal-exito .modal-title { color: #10b981; }
+.modal-confirmar .modal-title { color: #f59e0b; }
+
+/* --- Beneficiarios Modal --- */
+.modal-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 1rem;
+}
+.btn-close-modal {
+  background: #f1f5f9;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  color: #64748b;
+  font-size: 1rem;
+}
+.btn-close-modal:hover { background: #e2e8f0; color: #1e293b; }
+
+.ben-form {
+  background: #f8fafc;
+  padding: 1.2rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+.btn-sm-full { margin-top: 0.8rem; }
+
+.ben-list-section { margin-top: 1rem; }
+
+.ben-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.ben-table th {
+  padding: 0.8rem 1rem;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  text-align: left;
+}
+.ben-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 0.9rem;
+}
+.ben-table tr:last-child td { border-bottom: none; }
+.ben-table tr:hover { background: #fdf2f8; }
+
+.inline-input {
+  padding: 0.4rem 0.6rem !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  width: 100% !important;
+  font-size: 0.85rem !important;
+}
+
+.action-buttons { display: flex; gap: 0.4rem; }
+.btn-action {
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-edit { background: #e0f2fe; color: #0369a1; }
+.btn-edit:hover { background: #bae6fd; }
+.btn-delete { background: #fef2f2; color: #dc2626; }
+.btn-delete:hover { background: #fecaca; }
+.btn-save { background: #ecfdf5; color: #059669; }
+.btn-save:hover { background: #d1fae5; }
+.btn-cancel-sm { background: #f1f5f9; color: #475569; }
+.btn-cancel-sm:hover { background: #e2e8f0; }
+
+.empty-msg {
+  text-align: center;
+  color: #94a3b8;
+  padding: 2rem;
+  font-style: italic;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }

@@ -1,0 +1,86 @@
+<div class="premium-container">
+  <div class="header-section">
+    <h1>Gestión de Transferencias</h1>
+    <p>Registra y consulta el historial de venta y traspaso de parcelas.</p>
+  </div>
+
+  <div class="content-grid">
+    <!-- Formulario Glassmorphism -->
+    <div class="glass-card form-section">
+      <h2>Nueva Transferencia</h2>
+      
+      <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+      <div class="alert error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+      <form (ngSubmit)="registrar()" #tForm="ngForm">
+        <div class="form-group">
+          <label>Vendedor (Propietario actual)</label>
+          <select name="vendedor" [(ngModel)]="nuevaTransferencia.vendedorId" (ngModelChange)="onVendedorChange()" required>
+            <option [ngValue]="undefined">Seleccione un cliente</option>
+            <option *ngFor="let c of clientes" [ngValue]="c.id">{{ c.nombre }} - {{ c.dui }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Comprador (Nuevo propietario)</label>
+          <input type="text" name="compradorNombre" [(ngModel)]="nuevaTransferencia.compradorNombre" placeholder="Nombre completo" required>
+        </div>
+
+        <div class="form-group">
+          <label>Terreno / Parcela a Transferir</label>
+          <select name="cripta" [(ngModel)]="nuevaTransferencia.criptaId" [disabled]="!nuevaTransferencia.vendedorId || criptasDelVendedor.length === 0" required>
+            <option [ngValue]="undefined">Seleccione el terreno a transferir</option>
+            <option *ngFor="let cr of criptasDelVendedor" [ngValue]="cr.id">{{ cr.label }}</option>
+          </select>
+          <small *ngIf="nuevaTransferencia.vendedorId && criptasDelVendedor.length === 0" class="text-error">Este propietario no tiene terrenos asignados.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Fecha de Transferencia</label>
+          <input type="date" name="fecha" [(ngModel)]="nuevaTransferencia.fechaTransferencia" required>
+        </div>
+
+        <div class="form-group">
+          <label>Detalles / Motivo</label>
+          <textarea name="detalles" [(ngModel)]="nuevaTransferencia.detalles" rows="3" placeholder="Ej. Venta por traslado..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-premium" [disabled]="loading || tForm.invalid">
+          <span *ngIf="!loading">Registrar Transferencia</span>
+          <span *ngIf="loading" class="spinner"></span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Historial -->
+    <div class="glass-card table-section">
+      <h2>Historial Reciente</h2>
+      
+      <div class="table-responsive">
+        <table class="premium-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Vendedor</th>
+              <th>Comprador</th>
+              <th>Detalles</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of historial">
+              <td>#{{ t.id }}</td>
+              <td>{{ t.fechaTransferencia }}</td>
+              <td>{{ t.vendedorNombre || t.vendedorId }}</td>
+              <td><span class="highlight">{{ t.compradorNombre || t.compradorId }}</span></td>
+              <td class="detalles-cell">{{ t.detalles }}</td>
+            </tr>
+            <tr *ngIf="historial.length === 0">
+              <td colspan="5" class="empty-state">No hay transferencias registradas aún.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,112 @@
+<div class="premium-container">
+  <div class="header-section">
+    <h1>Monitoreo de Cementerios</h1>
+    <p>Selecciona un cementerio para ver el estado de todos sus espacios.</p>
+  </div>
+
+  <!-- SELECTOR DE CEMENTERIO (Tarjetas) -->
+  <div class="cementerio-selector" *ngIf="!selectedCementerio && !loading">
+    <div
+      *ngFor="let cem of cementerios"
+      class="cem-card"
+      (click)="seleccionarCementerio(cem.id)">
+      <div class="cem-card-icon">🏛️</div>
+      <h3>{{ cem.nombre }}</h3>
+      <span class="cem-tipo" [class.privado]="cem.tienePrivado">
+        {{ cem.tienePrivado ? 'Privado' : 'Público' }}
+      </span>
+      <span class="cem-id">ID: {{ cem.id }}</span>
+    </div>
+
+    <div *ngIf="cementerios.length === 0" class="empty-state">
+      <p>No hay cementerios registrados en el sistema.</p>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner-big"></div>
+    <p>Cargando información del cementerio...</p>
+  </div>
+
+  <!-- DETALLE DEL CEMENTERIO SELECCIONADO -->
+  <div class="detalle-section" *ngIf="selectedCementerio && !loading">
+    <div class="detalle-header">
+      <button class="btn-back" (click)="volver()">← Volver</button>
+      <h2>{{ selectedCementerio.nombre }}</h2>
+      <span class="cem-tipo" [class.privado]="selectedCementerio.tienePrivado">
+        {{ selectedCementerio.tienePrivado ? 'PRIVADO' : 'PÚBLICO' }}
+      </span>
+    </div>
+
+    <!-- Resumen de estados -->
+    <div class="stats-bar">
+      <div class="stat disponible-stat">
+        <span class="stat-dot green"></span>
+        <strong>{{ cantDisponible }}</strong> Disponibles
+      </div>
+      <div class="stat ocupado-stat">
+        <span class="stat-dot red"></span>
+        <strong>{{ cantOcupado }}</strong> Ocupados
+      </div>
+      <div class="stat mant-stat">
+        <span class="stat-dot orange"></span>
+        <strong>{{ cantMantenimiento }}</strong> Mantenimiento
+      </div>
+      <div class="stat total-stat">
+        <strong>{{ espaciosFlat.length }}</strong> Total
+      </div>
+    </div>
+
+    <!-- Tabla de espacios -->
+    <div class="table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Sección</th>
+            <th>Parcela</th>
+            <th>Fila</th>
+            <th>Col.</th>
+            <th>Espacio #</th>
+            <th>Estado</th>
+            <th>Difunto</th>
+            <th>Tipo Difunto</th>
+            <th>Propietario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let esp of espaciosFlat">
+            <td class="id-cell">#{{ esp.id }}</td>
+            <td>{{ esp.seccion }}</td>
+            <td>{{ esp.parcela }}</td>
+            <td>{{ esp.fila }}</td>
+            <td>{{ esp.columna }}</td>
+            <td>{{ esp.numero }}</td>
+            <td>
+              <span class="status-badge"
+                [ngClass]="{
+                  'status-disponible': esp.estado === 'DISPONIBLE' || !esp.estado,
+                  'status-ocupado': esp.estado === 'OCUPADO',
+                  'status-mantenimiento': esp.estado === 'EN_MANTENIMIENTO'
+                }">
+                {{ esp.estado || 'DISPONIBLE' }}
+              </span>
+            </td>
+            <td>{{ esp.difunto || '—' }}</td>
+            <td>
+              <span *ngIf="esp.difunto" class="status-badge" [ngClass]="esp.esPrivado ? 'status-privado' : 'status-publico'">
+                {{ esp.esPrivado ? 'Privado' : 'Público' }}
+              </span>
+              <span *ngIf="!esp.difunto">—</span>
+            </td>
+            <td>{{ esp.propietario }}</td>
+          </tr>
+          <tr *ngIf="espaciosFlat.length === 0">
+            <td colspan="10" class="empty-row">No hay espacios registrados en este cementerio.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

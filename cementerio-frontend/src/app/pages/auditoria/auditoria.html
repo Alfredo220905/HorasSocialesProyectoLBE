@@ -1,0 +1,53 @@
+<div class="premium-container">
+  <div class="header-section">
+    <div class="title-group">
+      <div class="icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      </div>
+      <div>
+        <h1>Auditoría del Sistema</h1>
+        <p>Monitorea las acciones y accesos de los usuarios en tiempo real.</p>
+      </div>
+    </div>
+    
+    <div class="search-bar">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" [(ngModel)]="searchTerm" (input)="filtrar()" placeholder="Buscar por acción, usuario o detalles...">
+    </div>
+  </div>
+
+  <div class="glass-card">
+    <div class="table-responsive">
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>Fecha y Hora</th>
+            <th>Usuario</th>
+            <th>Acción</th>
+            <th>Detalles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of filteredLogs">
+            <td class="date-cell">{{ log.fechaHora | date:'medium' }}</td>
+            <td class="user-cell">
+              <span class="user-badge">{{ log.usuario?.correo || 'Sistema' }}</span>
+            </td>
+            <td>
+              <span class="action-badge" [ngClass]="log.accion.split('_')[0].toLowerCase()">
+                {{ log.accion }}
+              </span>
+            </td>
+            <td class="detalles-cell">{{ log.detalles }}</td>
+          </tr>
+          <tr *ngIf="filteredLogs.length === 0">
+            <td colspan="4" class="empty-state">
+              <div class="empty-icon">🔍</div>
+              No se encontraron registros de auditoría.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

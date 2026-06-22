@@ -1,0 +1,42 @@
+<div class="header-container">
+  <h2>Panel de Gestión - Cementerios</h2>
+  
+  <button (click)="onLogout()" class="btn-logout">
+    CERRAR SESIÓN
+  </button>
+</div>
+
+<div class="form-card card">
+  <h3>Crear Nuevo Cementerio</h3>
+  
+  <div class="form-group">
+    <label>Nombre:</label>
+    <input type="text" [(ngModel)]="nombre" placeholder="Nombre del cementerio">
+  </div>
+
+  <div class="form-group">
+    <label class="checkbox-label">
+      <input type="checkbox" [(ngModel)]="tienePrivado">
+      ¿Tiene zona privada?
+    </label>
+  </div>
+
+  <button (click)="crear()" class="btn-save">
+    GUARDAR CEMENTERIO
+  </button>
+</div>
+
+<!-- Alerta Genérica Modal -->
+<div class="modal-overlay" *ngIf="alertaModal.visible" style="z-index: 2000;">
+  <div class="modal-content modal-sm" style="background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); margin: auto;">
+    <div class="modal-header" [ngClass]="alertaModal.tipo">
+      <h2 [style.color]="alertaModal.tipo === 'error' ? '#dc2626' : '#16a34a'">{{ alertaModal.titulo }}</h2>
+    </div>
+    <div class="modal-body" style="text-align: center; margin-top: 1rem;">
+      <p style="color: #4b5563;">{{ alertaModal.mensaje }}</p>
+    </div>
+    <div class="modal-actions" style="justify-content: center; display: flex; gap: 1rem; margin-top: 1.5rem;">
+      <button class="btn-primary" (click)="cerrarAlertaModal()" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: bold;">Aceptar</button>
+    </div>
+  </div>
+</div>
