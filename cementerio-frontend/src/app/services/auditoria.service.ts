@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -15,7 +16,7 @@ export interface Auditoria {
 })
 export class AuditoriaService {
 
-  private apiUrl = 'http://localhost:8081/api/auditoria';
+  private apiUrl = `${environment.apiUrl}/auditoria`;
 
   constructor(private http: HttpClient) { }
 

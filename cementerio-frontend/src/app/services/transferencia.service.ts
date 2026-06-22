@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -18,7 +19,7 @@ export interface TransferenciaDTO {
   providedIn: 'root'
 })
 export class TransferenciaService {
-  private apiUrl = 'http://localhost:8081/api/transferencias';
+  private apiUrl = `${environment.apiUrl}/transferencias`;
 
   constructor(private http: HttpClient) {}
 

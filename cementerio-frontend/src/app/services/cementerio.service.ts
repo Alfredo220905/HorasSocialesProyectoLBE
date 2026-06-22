@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
@@ -6,8 +7,8 @@ import { HttpClient } from '@angular/common/http';
 })
 export class CementerioService {
 
-  private apiUrl = 'http://localhost:8081/api/cementerios';
-  private estructuraUrl = 'http://localhost:8081/api/estructura';
+  private apiUrl = `${environment.apiUrl}/cementerios`;
+  private estructuraUrl = `${environment.apiUrl}/estructura`;
 
   constructor(private http: HttpClient) {}
 
@@ -60,19 +61,19 @@ export class CementerioService {
     const body: any = { nombre: nombreArchivo, base64Archivo };
     if (clienteId) body['clienteId'] = clienteId;
     if (difuntoId) body['difuntoId'] = difuntoId;
-    return this.http.post(`http://localhost:8081/api/documentos`, body);
+    return this.http.post(`${environment.apiUrl}/documentos`, body);
   }
 
   getDocumentosPorCliente(clienteId: number) {
-    return this.http.get<any[]>(`http://localhost:8081/api/documentos/cliente/${clienteId}`);
+    return this.http.get<any[]>(`${environment.apiUrl}/documentos/cliente/${clienteId}`);
   }
 
   getDocumentosPorDifunto(difuntoId: number) {
-    return this.http.get<any[]>(`http://localhost:8081/api/documentos/difunto/${difuntoId}`);
+    return this.http.get<any[]>(`${environment.apiUrl}/documentos/difunto/${difuntoId}`);
   }
 
   eliminarDocumento(documentoId: number) {
-    return this.http.delete(`http://localhost:8081/api/documentos/${documentoId}`);
+    return this.http.delete(`${environment.apiUrl}/documentos/${documentoId}`);
   }
 }
 

@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -178,8 +179,8 @@ interface Cliente {
   `]
 })
 export class ClientesComponent implements OnInit {
-  private clientesUrl = 'http://localhost:8081/api/clientes';
-  private difuntosUrl = 'http://localhost:8081/api/difuntos/cliente';
+  private clientesUrl = `${environment.apiUrl}/clientes`;
+  private difuntosUrl = `${environment.apiUrl}/difuntos/cliente`;
   
   filtro = '';
   clientes: Cliente[] = [];

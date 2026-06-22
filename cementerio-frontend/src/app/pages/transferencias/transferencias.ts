@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -36,7 +37,7 @@ export class Transferencias implements OnInit {
   }
 
   cargarClientes(): void {
-    this.http.get<any[]>('http://localhost:8081/api/clientes').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/clientes`).subscribe({
       next: (data) => this.clientes = data,
       error: (err) => console.error('Error al cargar clientes', err)
     });
@@ -45,7 +46,7 @@ export class Transferencias implements OnInit {
   onVendedorChange(): void {
     this.nuevaTransferencia.criptaId = undefined;
     if (this.nuevaTransferencia.vendedorId) {
-      this.http.get<any[]>(`http://localhost:8081/api/clientes/${this.nuevaTransferencia.vendedorId}/criptas`).subscribe({
+      this.http.get<any[]>(`${environment.apiUrl}/clientes/${this.nuevaTransferencia.vendedorId}/criptas`).subscribe({
         next: (data) => this.criptasDelVendedor = data,
         error: (err) => console.error('Error al cargar criptas', err)
       });

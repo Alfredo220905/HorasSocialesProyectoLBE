@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -219,10 +220,10 @@ import { catchError } from 'rxjs/operators';
   `]
 })
 export class PagosComponent implements OnInit {
-  private apiUrl = 'http://localhost:8081/api/pagos';
-  private clientesBusquedaUrl = 'http://localhost:8081/api/clientes/buscar';
-  private difuntosBusquedaUrl = 'http://localhost:8081/api/difuntos/buscar';
-  private tasasUrl = 'http://localhost:8081/api/tasas';
+  private apiUrl = `${environment.apiUrl}/pagos`;
+  private clientesBusquedaUrl = `${environment.apiUrl}/clientes/buscar`;
+  private difuntosBusquedaUrl = `${environment.apiUrl}/difuntos/buscar`;
+  private tasasUrl = `${environment.apiUrl}/tasas`;
   
   // Propietarios y Pagos
   filtroPropietario: string = '';

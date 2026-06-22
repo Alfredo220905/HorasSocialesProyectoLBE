@@ -15,7 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/estructura")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
+
 public class EstructuraController {
 
     private final EstructuraService estructuraService;

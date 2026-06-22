@@ -14,7 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/espacios")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
+
 public class EspacioController {
 
     private final EspacioRepository espacioRepository;

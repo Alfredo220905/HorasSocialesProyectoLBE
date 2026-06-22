@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -16,7 +17,7 @@ export interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private baseUrl = 'http://localhost:8081/api/auth';
+  private baseUrl = `${environment.apiUrl}/auth`;
 
   constructor(private http: HttpClient, private router: Router) {}
 

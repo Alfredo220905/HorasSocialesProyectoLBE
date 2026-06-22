@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -1004,14 +1005,14 @@ export class DetalleCementerioComponent implements OnInit {
         this.cementerioService.getDocumentosPorCliente(entidadId).subscribe(docs => {
           this.modalVerDatos.documentosCargados = docs;
         });
-        this.http.get<any[]>(`http://localhost:8081/api/pagos/cliente/${entidadId}`).subscribe(pagos => {
+        this.http.get<any[]>(`${environment.apiUrl}/pagos/cliente/${entidadId}`).subscribe(pagos => {
           this.modalVerDatos.pagosCargados = pagos;
         });
       } else if (tipo === 'difunto') {
         this.cementerioService.getDocumentosPorDifunto(entidadId).subscribe(docs => {
           this.modalVerDatos.documentosCargados = docs;
         });
-        this.http.get<any[]>(`http://localhost:8081/api/pagos/difunto/${entidadId}`).subscribe(pagos => {
+        this.http.get<any[]>(`${environment.apiUrl}/pagos/difunto/${entidadId}`).subscribe(pagos => {
           this.modalVerDatos.pagosCargados = pagos;
         });
       }
@@ -1041,7 +1042,7 @@ export class DetalleCementerioComponent implements OnInit {
       payload.difuntoId = this.modalVerDatos.datos.id;
     }
 
-    this.http.post<any>('http://localhost:8081/api/pagos', payload).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/pagos`, payload).subscribe({
       next: (res) => {
         this.modalVerDatos.pagosCargados.push(res);
         this.mostrarModal('exito', 'Pago Registrado', 'El pago se ha registrado correctamente.');

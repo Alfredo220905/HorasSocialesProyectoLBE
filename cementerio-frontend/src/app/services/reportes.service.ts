@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
@@ -6,7 +7,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ReportesService {
 
-  private apiUrl = 'http://localhost:8081/api/reportes';
+  private apiUrl = `${environment.apiUrl}/reportes`;
 
   constructor(private http: HttpClient) { }
 

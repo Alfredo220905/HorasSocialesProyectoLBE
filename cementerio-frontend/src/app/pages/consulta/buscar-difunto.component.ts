@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -396,7 +397,7 @@ export class BuscarDifuntoComponent implements OnInit {
     if (!confirm('¿Está seguro de que desea eliminar este documento?')) return;
     
     // Call the API endpoint (requires HttpClient, I'll inject it)
-    fetch(`http://localhost:8081/api/documentos/${doc.id}`, { method: 'DELETE' })
+    fetch(`${environment.apiUrl}/documentos/${doc.id}`, { method: 'DELETE' })
       .then(res => {
         if (res.ok) {
           difunto.documentos = difunto.documentos?.filter((d: any) => d.id !== doc.id);

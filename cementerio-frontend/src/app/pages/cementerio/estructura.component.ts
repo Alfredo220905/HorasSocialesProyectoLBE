@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -65,7 +66,7 @@ export class EstructuraComponent implements OnInit {
 
   selectedLotes: { [parcelaId: number]: number } = {};
 
-  private apiUrl = 'http://localhost:8081/api/estructura';
+  private apiUrl = `${environment.apiUrl}/estructura`;
 
   constructor(private cementerioService: CementerioService, private http: HttpClient) {}
 
@@ -89,7 +90,7 @@ export class EstructuraComponent implements OnInit {
       this.selectedSeccionNombre = '';
       this.esPrivado = false;
       // Cargar secciones desde el API usando el nuevo endpoint
-      this.http.get<any[]>(`http://localhost:8081/api/cementerios/${c.id}/secciones`).subscribe({
+      this.http.get<any[]>(`${environment.apiUrl}/cementerios/${c.id}/secciones`).subscribe({
         next: (secciones) => {
           this.seccionesDisponibles = secciones;
         },
@@ -121,7 +122,7 @@ export class EstructuraComponent implements OnInit {
 
   recargarDatosSeccion() {
     if (!this.selectedCementerioId || !this.selectedSeccionId) return;
-    this.http.get<any[]>(`http://localhost:8081/api/cementerios/${this.selectedCementerioId}/secciones`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/cementerios/${this.selectedCementerioId}/secciones`).subscribe({
       next: (secciones) => {
         this.seccionesDisponibles = secciones;
         const sec = this.seccionesDisponibles.find(s => s.id == this.selectedSeccionId);

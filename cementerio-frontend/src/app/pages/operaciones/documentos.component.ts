@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -89,9 +90,9 @@ import { HttpClient } from '@angular/common/http';
   `]
 })
 export class DocumentosComponent implements OnInit {
-  private apiUrl = 'http://localhost:8081/api/documentos';
-  private difuntosUrl = 'http://localhost:8081/api/difuntos';
-  private clientesUrl = 'http://localhost:8081/api/clientes';
+  private apiUrl = `${environment.apiUrl}/documentos`;
+  private difuntosUrl = `${environment.apiUrl}/difuntos`;
+  private clientesUrl = `${environment.apiUrl}/clientes`;
   filtro = '';
   documentos: any[] = [];
   clientes: any[] = [];

@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -148,7 +149,7 @@ export class ListaCementeriosComponent implements OnInit {
     this.mostrarModalAlerta('confirmar', 'Eliminar Cementerio', 
       `¿Está seguro de eliminar el cementerio "${cementerio.nombre}"? Esta acción borrará todas sus secciones, parcelas, criptas y espacios.`, 
       () => {
-        this.http.delete(`http://localhost:8081/api/cementerios/${cementerio.id}`).subscribe({
+        this.http.delete(`${environment.apiUrl}/cementerios/${cementerio.id}`).subscribe({
           next: () => {
             this.mostrarModalAlerta('exito', 'Cementerio Eliminado', 'El cementerio ha sido eliminado correctamente.');
             this.cargarCementerios();

@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -53,7 +54,7 @@ export interface DifuntoDTO {
   providedIn: 'root'
 })
 export class DifuntoService {
-  private apiUrl = 'http://localhost:8081/api/difuntos';
+  private apiUrl = `${environment.apiUrl}/difuntos`;
 
   constructor(private http: HttpClient) {}
 

@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RestController
 @RequestMapping("/api/usuarios")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
+
 @PreAuthorize("hasAnyRole('ADMIN', 'INFORMATICA')")
 public class UsuarioController {
 

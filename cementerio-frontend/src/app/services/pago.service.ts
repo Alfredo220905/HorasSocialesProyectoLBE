@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -16,7 +17,7 @@ export interface PagoDTO {
   providedIn: 'root'
 })
 export class PagoService {
-  private apiUrl = 'http://localhost:8081/api/pagos';
+  private apiUrl = `${environment.apiUrl}/pagos`;
 
   constructor(private http: HttpClient) {}
 

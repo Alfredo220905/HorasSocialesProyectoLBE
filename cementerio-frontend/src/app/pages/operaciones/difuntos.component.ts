@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -849,11 +850,11 @@ export class DifuntosComponent implements OnInit {
 
   cargarCementerios() {
     if (this.esAdmin) {
-      this.http.get<any[]>('http://localhost:8081/api/cementerios').subscribe(data => {
+      this.http.get<any[]>(`${environment.apiUrl}/cementerios`).subscribe(data => {
         this.cementerios = data;
       });
     } else if (this.cementerioIdUsuario) {
-      this.http.get<any>(`http://localhost:8081/api/cementerios/${this.cementerioIdUsuario}`).subscribe(cem => {
+      this.http.get<any>(`${environment.apiUrl}/cementerios/${this.cementerioIdUsuario}`).subscribe(cem => {
         this.cementerioEsPrivado = cem.tienePrivado || false;
       });
     }
@@ -983,7 +984,7 @@ export class DifuntosComponent implements OnInit {
   }
   cargarEspacios(cementerioId: number) {
     this.cargandoEspacios = true;
-    this.http.get<any[]>(`http://localhost:8081/api/espacios/por-cementerio/${cementerioId}`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/espacios/por-cementerio/${cementerioId}`).subscribe({
       next: (data) => {
         this.espacios = data;
         // Compute distinct parcelas with section
