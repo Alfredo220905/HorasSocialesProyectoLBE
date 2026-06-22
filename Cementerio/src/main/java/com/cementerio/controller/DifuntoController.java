@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDate;
-
+ 
 @RestController
 @RequestMapping("/api/difuntos")
 @RequiredArgsConstructor
