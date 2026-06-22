@@ -4,7 +4,7 @@ public class AuthResponse {
     private String token;
     private Long id;
     private String rol;
-    private boolean esTemporal;
+    private boolean esTemporal; 
     private Long cementerioId;
     private String cementerioNombre;
 
