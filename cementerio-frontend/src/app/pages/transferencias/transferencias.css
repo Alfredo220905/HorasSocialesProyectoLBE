@@ -231,3 +231,11 @@
   margin-top: 0.25rem;
   display: block;
 }
+
+/* RESPONSIVE MÓVIL */
+@media (max-width: 768px) {
+  .premium-container { padding: 1rem; }
+  .header-section h1 { font-size: 1.6rem; }
+  .glass-card { padding: 1.2rem; }
+  .premium-table th, .premium-table td { padding: 0.8rem; font-size: 0.85rem; }
+}

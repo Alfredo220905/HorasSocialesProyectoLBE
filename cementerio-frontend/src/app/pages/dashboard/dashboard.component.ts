@@ -25,10 +25,21 @@ export class DashboardComponent implements OnInit {
     
     // Cargar preferencia de modo oscuro
     this.darkMode = localStorage.getItem('dark_mode') === 'true';
+
+    // Ocultar menú en móviles por defecto
+    if (window.innerWidth <= 992) {
+      this.sidebarClosed = true;
+    }
   }
 
   toggleSidebar(): void {
     this.sidebarClosed = !this.sidebarClosed;
+  }
+
+  closeSidebarOnMobile(): void {
+    if (window.innerWidth <= 992) {
+      this.sidebarClosed = true;
+    }
   }
 
   toggleDarkMode(): void {

@@ -15,7 +15,7 @@ import { AuthService } from '../../services/auth.service';
       <div class="header-section">
         <h2 class="title">Lista de Cementerios</h2>
         <button (click)="cargarCementerios()" class="btn-refresh">
-          🔄 ACTUALIZAR
+          <svg style="margin-right: 6px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.83L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 1 0-2.13 5.83L3 16"></path></svg> ACTUALIZAR
         </button>
       </div>
 
@@ -31,7 +31,9 @@ import { AuthService } from '../../services/auth.service';
           </div>
           <div class="card-actions" style="display: flex; gap: 0.5rem;">
             <button class="btn-details" (click)="verDetalle(c.id)" style="flex: 1;">VER DETALLES ESTRUCTURA</button>
-            <button *ngIf="isAdmin" class="btn-delete-cem" (click)="confirmarEliminar(c)" title="Eliminar Cementerio">🗑️</button>
+            <button *ngIf="isAdmin" class="btn-delete-cem" (click)="confirmarEliminar(c)" title="Eliminar Cementerio">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </button>
           </div>
         </div>
       </div>
@@ -85,6 +87,17 @@ import { AuthService } from '../../services/auth.service';
     .btn-primary { background: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* RESPONSIVE MÓVIL */
+    @media (max-width: 768px) {
+      .page-container { padding: 1rem; }
+      .header-section { flex-direction: column; align-items: stretch; gap: 1rem; }
+      .btn-refresh { width: 100%; display: flex; justify-content: center; align-items: center; }
+      .grid-container { grid-template-columns: 1fr; }
+      .card-actions { flex-direction: column; }
+      .btn-delete-cem { width: 100%; }
+      .modal-content { width: 100%; height: 100%; max-height: 100vh; border-radius: 0; padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; }
+    }
   `]
 })
 export class ListaCementeriosComponent implements OnInit {

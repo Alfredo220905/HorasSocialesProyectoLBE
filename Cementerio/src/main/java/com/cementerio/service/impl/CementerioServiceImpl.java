@@ -151,9 +151,22 @@ public class CementerioServiceImpl implements CementerioService {
         
         difunto.setNombre(datosDifunto.getNombre());
         difunto.setDui(datosDifunto.getDui());
+        difunto.setEdad(datosDifunto.getEdad());
+        difunto.setSexo(datosDifunto.getSexo());
+        difunto.setEstadoCivil(datosDifunto.getEstadoCivil());
+        difunto.setCausaMuerte(datosDifunto.getCausaMuerte());
+        difunto.setDomicilioFallecido(datosDifunto.getDomicilioFallecido());
+        difunto.setNombreResponsable(datosDifunto.getNombreResponsable());
+        difunto.setDomicilioResponsable(datosDifunto.getDomicilioResponsable());
+        difunto.setCelularResponsable(datosDifunto.getCelularResponsable());
         difunto.setFechaNacimiento(datosDifunto.getFechaNacimiento());
         difunto.setFechaFallecimiento(datosDifunto.getFechaFallecimiento());
+        difunto.setHoraFallecimiento(datosDifunto.getHoraFallecimiento());
         difunto.setFechaEntierro(datosDifunto.getFechaEntierro());
+        difunto.setHoraEntierro(datosDifunto.getHoraEntierro());
+        difunto.setMaterialPlaca(datosDifunto.getMaterialPlaca());
+        difunto.setMedidasPlaca(datosDifunto.getMedidasPlaca());
+        difunto.setFirmasAutorizadas(datosDifunto.getFirmasAutorizadas());
         difunto.setDocumentosJson(datosDifunto.getDocumentosJson());
         
         boolean esPrivado = false;

@@ -17,31 +17,53 @@ import { catchError } from 'rxjs/operators';
 
     <!-- Buscador de Propietario -->
     <div class="card search-card" *ngIf="!propietarioSeleccionado">
-      <h3>Buscar Propietario</h3>
-      <p class="text-muted">Busque al cliente por nombre o DUI para ver o registrar sus pagos.</p>
-      
-      <div class="search-container">
-        <input type="text" placeholder="Buscar o seleccionar propietario (DUI o Nombre)..." 
-               [(ngModel)]="filtroPropietario" 
-               (focus)="mostrarPropietarios()"
-               (input)="onSearchPropietarioInput($event)"
-               (blur)="ocultarPropietariosConRetraso()"
-               class="search-input">
-        
-        <div class="dropdown-list" *ngIf="mostrarDropdownPropietario && propietariosFiltrados.length > 0">
-          <div class="dropdown-item" *ngFor="let item of propietariosFiltrados" (mousedown)="seleccionarPropietario(item)">
-            <div class="owner-avatar-small">{{ item._displayName?.charAt(0) || '?' }}</div>
-            <div style="flex-grow: 1;">
-              <strong>{{ item._displayName }}</strong> 
-              <span class="cat-badge" [ngClass]="item._tipo === 'PROPIETARIO' ? 'general' : 'jardin'" style="margin-left: 0.5rem;">
-                {{ item._tipo }}
-              </span>
-              <br>
-              <span class="text-muted" style="font-size: 0.8rem;">Identificador: {{ item._displayId }}</span>
-            </div>
-            <button class="btn-primary" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">Seleccionar</button>
-          </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h3 style="margin: 0; color: #8a1f53;">Seleccionar Propietario o Difunto</h3>
+          <p class="text-muted" style="margin-top: 0.3rem;">Busque en la tabla para seleccionar a quién se le aplicará el cobro.</p>
         </div>
+        <div class="search-container" style="max-width: 400px; margin: 0; flex-grow: 1;">
+          <input type="text" placeholder="Buscar por DUI o Nombre..." 
+                 [(ngModel)]="filtroPropietario" 
+                 (input)="onSearchPropietarioInput($event)"
+                 class="search-input">
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Identificador (DUI/Corr)</th>
+              <th>Nombre Completo</th>
+              <th>Tipo de Cliente</th>
+              <th style="text-align: center;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+             <tr *ngFor="let item of propietariosPaginados">
+                <td style="font-family: monospace; font-size: 0.95rem; color: #475569;">{{ item._displayId }}</td>
+                <td><strong style="color: #111827;">{{ item._displayName }}</strong></td>
+                <td>
+                  <span class="cat-badge" [ngClass]="item._tipo === 'PROPIETARIO' ? 'general' : 'jardin'">
+                    {{ item._tipo }}
+                  </span>
+                </td>
+                <td style="text-align: center;">
+                  <button class="btn-primary" style="padding: 0.4rem 1rem; font-size: 0.85rem; display: inline-flex;" (click)="seleccionarPropietario(item)">Seleccionar</button>
+                </td>
+             </tr>
+             <tr *ngIf="propietariosPaginados.length === 0">
+                <td colspan="4" class="empty">No se encontraron resultados para la búsqueda actual.</td>
+             </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-controls" *ngIf="propietariosFiltrados.length > 0">
+        <button [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+        <span style="font-weight: 600; color: #475569;">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
       </div>
     </div>
 
@@ -95,7 +117,9 @@ import { catchError } from 'rxjs/operators';
                     </span>
                   </td>
                   <td class="row-actions">
-                    <button class="btn-icon" style="color: #207044; border-color: #a3d9b4; background: #e8f5e9;" *ngIf="pago.estado !== 'PAGADO'" (click)="marcar(pago.id, 'PAGADO')">✓ Cobrar</button>
+                    <button class="btn-icon" style="color: #207044; border-color: #a3d9b4; background: #e8f5e9; display: flex; align-items: center; gap: 4px;" *ngIf="pago.estado !== 'PAGADO'" (click)="marcar(pago.id, 'PAGADO')">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Cobrar
+                    </button>
                     <button class="btn-icon danger" (click)="eliminar(pago.id)">Eliminar</button>
                   </td>
                 </tr>
@@ -132,7 +156,9 @@ import { catchError } from 'rxjs/operators';
           <div class="selected-tasas-container" *ngIf="form.tasasSeleccionadas.length > 0">
             <div class="tasa-chip" *ngFor="let t of form.tasasSeleccionadas; let i = index">
               {{ t.concepto }} ($ {{ t.precioOficial | number:'1.2-2' }})
-              <span class="remove-tasa" (click)="removerTasa(i)">×</span>
+              <span class="remove-tasa" (click)="removerTasa(i)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </span>
             </div>
           </div>
           
@@ -172,17 +198,16 @@ import { catchError } from 'rxjs/operators';
     .search-input:focus { outline: none; border-color: #d63384; box-shadow: 0 0 0 4px rgba(214,51,132,0.1); }
     
     .owner-header { display: flex; align-items: center; gap: 1.5rem; }
-    .owner-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #d63384, #8a1f53); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; box-shadow: 0 4px 10px rgba(214,51,132,0.3); }
+    .owner-avatar { min-width: 60px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #d63384, #8a1f53); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; box-shadow: 0 4px 10px rgba(214,51,132,0.3); }
     .owner-avatar-small { width: 36px; height: 36px; border-radius: 50%; background: #fce4f0; color: #d63384; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; }
     
     .main-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 1.5rem; align-items: start; }
-    @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
     
     input, select { width: 100%; padding: 0.8rem 1rem; border: 1px solid #f3c2d9; border-radius: 8px; font-size: 1rem; background: #fff; }
     input:focus, select:focus { outline: none; border-color: #d63384; }
     
     .actions, .row-actions { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
-    .btn-primary { background: linear-gradient(135deg, #d63384, #a62664); color: #fff; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(214,51,132,0.2); }
+    .btn-primary { background: linear-gradient(135deg, #d63384, #a62664); color: #fff; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(214,51,132,0.2); display: flex; align-items: center; justify-content: center; }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 15px rgba(214,51,132,0.3); }
     .btn-secondary { background: #fff; color: #8a1f53; border: 1px solid #e2e8f0; padding: 0.65rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
     .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
@@ -204,7 +229,7 @@ import { catchError } from 'rxjs/operators';
     /* Buscador Dropdown */
     .multi-select-container { position: relative; width: 100%; }
     .dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 20; max-height: 300px; overflow-y: auto; margin-top: 8px; padding: 0.5rem; }
-    .dropdown-item { padding: 0.8rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.2s; }
+    .dropdown-item { padding: 0.8rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.2s; flex-wrap: wrap;}
     .dropdown-item:hover { background: #f8fafc; }
     
     /* Chips Seleccionados */
@@ -217,6 +242,30 @@ import { catchError } from 'rxjs/operators';
     .cat-badge { font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 4px; letter-spacing: 0.05em; }
     .jardin { background: #fef9c3; color: #854d0e; }
     .general { background: #e0f2fe; color: #0369a1; }
+
+    .pagination-controls {
+      display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.5rem; padding: 1rem;
+    }
+    .pagination-controls button {
+      padding: 0.5rem 1rem; border: 1px solid #cbd5e1; background: white; border-radius: 8px; cursor: pointer; color: #475569; font-weight: 600;
+    }
+    .pagination-controls button:disabled {
+      opacity: 0.5; cursor: not-allowed;
+    }
+    .pagination-controls button:not(:disabled):hover {
+      background: #f8fafc; border-color: #94a3b8;
+    }
+
+    /* RESPONSIVE MÓVIL */
+    @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) {
+      .card { padding: 1rem; }
+      .owner-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .btn-secondary { width: 100%; }
+      th, td { padding: 0.8rem; font-size: 0.85rem; }
+      .row-actions { flex-direction: column; align-items: flex-start; }
+      .btn-icon { width: 100%; text-align: center; justify-content: center; }
+    }
   `]
 })
 export class PagosComponent implements OnInit {
@@ -230,6 +279,25 @@ export class PagosComponent implements OnInit {
   propietariosFiltrados: any[] = [];
   propietarioSeleccionado: any = null;
   pagosPropietario: any[] = [];
+  
+  // Paginación de Propietarios
+  paginaActual: number = 1;
+  itemsPorPagina: number = 5;
+
+  get totalPaginas() {
+    return Math.ceil(this.propietariosFiltrados.length / this.itemsPorPagina) || 1;
+  }
+
+  get propietariosPaginados() {
+    const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+    return this.propietariosFiltrados.slice(inicio, inicio + this.itemsPorPagina);
+  }
+
+  cambiarPagina(p: number) {
+    if (p >= 1 && p <= this.totalPaginas) {
+      this.paginaActual = p;
+    }
+  }
   
   // Tasas
   tasas: any[] = [];
@@ -250,6 +318,7 @@ export class PagosComponent implements OnInit {
 
   ngOnInit() {
     this.cargarTasas();
+    this.buscarPropietario(); // Cargar la tabla al inicio
   }
 
   get pagosPendientes() {
@@ -273,20 +342,8 @@ export class PagosComponent implements OnInit {
       this.filtroPropietario = input;
     }
     
+    this.paginaActual = 1; // Volver a la página 1 al buscar
     this.buscarPropietario();
-  }
-
-  mostrarDropdownPropietario = false;
-
-  mostrarPropietarios() {
-    this.mostrarDropdownPropietario = true;
-    this.buscarPropietario();
-  }
-
-  ocultarPropietariosConRetraso() {
-    setTimeout(() => {
-      this.mostrarDropdownPropietario = false;
-    }, 150);
   }
 
   buscarPropietario() {

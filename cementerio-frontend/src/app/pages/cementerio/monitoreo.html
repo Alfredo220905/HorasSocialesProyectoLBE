@@ -10,7 +10,9 @@
       *ngFor="let cem of cementerios"
       class="cem-card"
       (click)="seleccionarCementerio(cem.id)">
-      <div class="cem-card-icon">🏛️</div>
+      <div class="cem-card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>
+      </div>
       <h3>{{ cem.nombre }}</h3>
       <span class="cem-tipo" [class.privado]="cem.tienePrivado">
         {{ cem.tienePrivado ? 'Privado' : 'Público' }}
@@ -60,53 +62,55 @@
 
     <!-- Tabla de espacios -->
     <div class="table-card">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Sección</th>
-            <th>Parcela</th>
-            <th>Fila</th>
-            <th>Col.</th>
-            <th>Espacio #</th>
-            <th>Estado</th>
-            <th>Difunto</th>
-            <th>Tipo Difunto</th>
-            <th>Propietario</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let esp of espaciosFlat">
-            <td class="id-cell">#{{ esp.id }}</td>
-            <td>{{ esp.seccion }}</td>
-            <td>{{ esp.parcela }}</td>
-            <td>{{ esp.fila }}</td>
-            <td>{{ esp.columna }}</td>
-            <td>{{ esp.numero }}</td>
-            <td>
-              <span class="status-badge"
-                [ngClass]="{
-                  'status-disponible': esp.estado === 'DISPONIBLE' || !esp.estado,
-                  'status-ocupado': esp.estado === 'OCUPADO',
-                  'status-mantenimiento': esp.estado === 'EN_MANTENIMIENTO'
-                }">
-                {{ esp.estado || 'DISPONIBLE' }}
-              </span>
-            </td>
-            <td>{{ esp.difunto || '—' }}</td>
-            <td>
-              <span *ngIf="esp.difunto" class="status-badge" [ngClass]="esp.esPrivado ? 'status-privado' : 'status-publico'">
-                {{ esp.esPrivado ? 'Privado' : 'Público' }}
-              </span>
-              <span *ngIf="!esp.difunto">—</span>
-            </td>
-            <td>{{ esp.propietario }}</td>
-          </tr>
-          <tr *ngIf="espaciosFlat.length === 0">
-            <td colspan="10" class="empty-row">No hay espacios registrados en este cementerio.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Sección</th>
+              <th>Parcela</th>
+              <th>Fila</th>
+              <th>Col.</th>
+              <th>Espacio #</th>
+              <th>Estado</th>
+              <th>Difunto</th>
+              <th>Tipo Difunto</th>
+              <th>Propietario</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let esp of espaciosFlat">
+              <td class="id-cell">#{{ esp.id }}</td>
+              <td>{{ esp.seccion }}</td>
+              <td>{{ esp.parcela }}</td>
+              <td>{{ esp.fila }}</td>
+              <td>{{ esp.columna }}</td>
+              <td>{{ esp.numero }}</td>
+              <td>
+                <span class="status-badge"
+                  [ngClass]="{
+                    'status-disponible': esp.estado === 'DISPONIBLE' || !esp.estado,
+                    'status-ocupado': esp.estado === 'OCUPADO',
+                    'status-mantenimiento': esp.estado === 'EN_MANTENIMIENTO'
+                  }">
+                  {{ esp.estado || 'DISPONIBLE' }}
+                </span>
+              </td>
+              <td>{{ esp.difunto || '—' }}</td>
+              <td>
+                <span *ngIf="esp.difunto" class="status-badge" [ngClass]="esp.esPrivado ? 'status-privado' : 'status-publico'">
+                  {{ esp.esPrivado ? 'Privado' : 'Público' }}
+                </span>
+                <span *ngIf="!esp.difunto">—</span>
+              </td>
+              <td>{{ esp.propietario }}</td>
+            </tr>
+            <tr *ngIf="espaciosFlat.length === 0">
+              <td colspan="10" class="empty-row">No hay espacios registrados en este cementerio.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

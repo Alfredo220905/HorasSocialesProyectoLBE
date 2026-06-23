@@ -18,13 +18,13 @@ import { AuthService } from '../../services/auth.service';
           <p>Gestión y seguimiento de ocupantes del cementerio</p>
         </div>
         <button class="btn-primary" (click)="abrirModal()">
-          <span class="icon">➕</span> Registrar Difunto
+          <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Registrar Difunto
         </button>
       </div>
 
       <!-- Badge de cementerio para Operador -->
       <div class="cementerio-badge-top" *ngIf="!esAdmin && cementerioNombreUsuario">
-        <span class="badge-icon">🏛️</span>
+        <svg class="badge-icon-svg" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>
         <span>Operando en: <strong>{{ cementerioNombreUsuario }}</strong></span>
       </div>
 
@@ -45,7 +45,7 @@ import { AuthService } from '../../services/auth.service';
 
       <div class="card filters-card">
         <div class="search-box">
-          <span class="search-icon">🔍</span>
+          <svg class="search-icon-svg" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <input type="text" placeholder="Buscar por nombre, DUI o ubicación..." [(ngModel)]="filtro">
         </div>
         <div class="filter-group">
@@ -98,7 +98,10 @@ import { AuthService } from '../../services/auth.service';
               </td>
               <td>
                 <div class="location-info">
-                  <span class="location-chip">📍 {{ d.cementerioNombre || 'Cementerio' }}</span>
+                  <span class="location-chip">
+                    <svg style="margin-right:4px;" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    {{ d.cementerioNombre || 'Cementerio' }}
+                  </span>
                   <div style="font-size: 0.8rem; margin-top: 6px; color: var(--text-muted); white-space: normal; line-height: 1.2;">{{ d.ubicacion }}</div>
                   <div style="margin-top: 6px;">
                     <span class="tipo-badge" [class.privado]="d.tipoCementerio === 'Privado'" [class.publico]="d.tipoCementerio !== 'Privado'">
@@ -122,10 +125,18 @@ import { AuthService } from '../../services/auth.service';
               </td>
               <td>
                 <div class="actions">
-                  <button class="btn-action view" title="Ver Detalle" (click)="verDetalles(d)">👁️</button>
-                  <button class="btn-action edit" title="Editar Difunto" (click)="editar(d)">✏️</button>
-                  <button class="btn-action delete" title="Eliminar Difunto" (click)="eliminar(d)">🗑️</button>
-                  <button class="btn-action renew" *ngIf="d.requiereRenovacion" title="Renovar Contrato">🔄</button>
+                  <button class="btn-action view" title="Ver Detalle" (click)="verDetalles(d)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+                  <button class="btn-action edit" title="Editar Difunto" (click)="editar(d)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                  </button>
+                  <button class="btn-action delete" title="Eliminar Difunto" (click)="eliminar(d)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+                  <button class="btn-action renew" *ngIf="d.requiereRenovacion" title="Renovar Contrato">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -170,7 +181,14 @@ import { AuthService } from '../../services/auth.service';
               </div>
               <div class="form-group">
                 <label>Estado Civil</label>
-                <input type="text" [(ngModel)]="nuevoDifunto.estadoCivil" placeholder="Ej: Soltero, Casado">
+                <select [(ngModel)]="nuevoDifunto.estadoCivil">
+                  <option value="">Seleccione</option>
+                  <option value="SOLTERO(A)">Soltero(a)</option>
+                  <option value="CASADO(A)">Casado(a)</option>
+                  <option value="VIUDO(A)">Viudo(a)</option>
+                  <option value="DIVORCIADO(A)">Divorciado(a)</option>
+                  <option value="ACOMPAÑADO(A)">Acompañado(a)</option>
+                </select>
               </div>
             </div>
             <div class="form-group">
@@ -255,7 +273,7 @@ import { AuthService } from '../../services/auth.service';
               </div>
 
               <div class="cementerio-badge" *ngIf="!esAdmin && cementerioNombreUsuario" style="margin-bottom: 1.5rem; display: inline-flex; align-items: center; gap: 0.5rem; background: #fff0f6; border: 1px solid #f3c2d9; border-radius: 8px; padding: 0.75rem 1rem; color: #d63384; font-size: 0.95rem; font-weight: 500;">
-                <span class="badge-icon" style="font-size: 1.2rem;">🏛️</span>
+                <svg class="badge-icon-svg" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>
                 <span>Registrando en: <strong>{{ cementerioNombreUsuario }}</strong></span>
               </div>
 
@@ -263,7 +281,7 @@ import { AuthService } from '../../services/auth.service';
                 <div class="loading-espacios" *ngIf="cargandoEspacios">⏳ Cargando estructura...</div>
                 <ng-container *ngIf="!cargandoEspacios">
                   <div class="privado-badge" *ngIf="cementerioEsPrivado">
-                    🔒 <strong>Jardín (Privado)</strong> — Verificaremos que el propietario esté al día.
+                    <svg style="margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> <strong>Jardín (Privado)</strong> — Verificaremos que el propietario esté al día.
                   </div>
                   <div class="form-group" *ngIf="parcelasUnicas.length > 0">
                     <label>Parcela *</label>
@@ -291,14 +309,14 @@ import { AuthService } from '../../services/auth.service';
                   </div>
                   
                   <div class="espacio-seleccionado-info" *ngIf="nuevoDifunto.espacioId && espacioSeleccionadoLabel">
-                    📍 <strong>Espacio seleccionado:</strong> {{ espacioSeleccionadoLabel }}
+                    <svg style="margin-right:4px;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <strong>Espacio seleccionado:</strong> {{ espacioSeleccionadoLabel }}
                   </div>
                   
                   <!-- VALIDACIONES FÍSICAS CRIPTA -->
                   <div class="validaciones-caja" *ngIf="nuevoDifunto.espacioId">
                     <ng-container *ngIf="cementerioEsPrivado">
                       <div class="alerta-privado">
-                        <strong>⚠️ Regla Cementerio Jardín:</strong> La placa identificativa debe ser estrictamente de material "Base de hierro con letras de bronce" y medir "40x20 cm".
+                        <svg style="margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> <strong>Regla Cementerio Jardín:</strong> La placa identificativa debe ser estrictamente de material "Base de hierro con letras de bronce" y medir "40x20 cm".
                       </div>
                       <div class="form-row">
                         <div class="form-group">
@@ -314,7 +332,7 @@ import { AuthService } from '../../services/auth.service';
                     
                     <ng-container *ngIf="!cementerioEsPrivado">
                       <div class="alerta-publico">
-                        <strong>⚠️ Regla Cementerio General:</strong> Está prohibida la construcción de bóvedas de cemento. Confirme la colocación de Cruz tradicional.
+                        <svg style="margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> <strong>Regla Cementerio General:</strong> Está prohibida la construcción de bóvedas de cemento. Confirme la colocación de Cruz tradicional.
                       </div>
                       <div class="checkbox-group">
                         <label>
@@ -331,7 +349,7 @@ import { AuthService } from '../../services/auth.service';
             <!-- ESPACIOS OSARIO -->
             <ng-container *ngIf="!modoEdicion && tipoInhumacionUI === 'osario'">
               <div class="alerta-privado">
-                <strong>⚠️ Sector Osarios:</strong> Digite el ID del Osario (temporal) y complete la validación de la placa (Aluminio 25x10 cm).
+                <svg style="margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> <strong>Sector Osarios:</strong> Digite el ID del Osario (temporal) y complete la validación de la placa (Aluminio 25x10 cm).
               </div>
               <div class="form-group">
                 <label>ID del Osario *</label>
@@ -356,7 +374,7 @@ import { AuthService } from '../../services/auth.service';
               <input type="file" (change)="onFileSelected($event)" multiple accept=".pdf,.doc,.docx" class="form-control"/>
               <ul class="uploaded-files" *ngIf="nuevoDifunto.documentos.length">
                 <li *ngFor="let doc of nuevoDifunto.documentos; let i = index">
-                  📄 {{ doc.nombre }} <span class="btn-remove-doc" (click)="nuevoDifunto.documentos.splice(i, 1)">✕</span>
+                  <svg style="margin-right:4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> {{ doc.nombre }} <span class="btn-remove-doc" (click)="nuevoDifunto.documentos.splice(i, 1)">✕</span>
                 </li>
               </ul>
             </div>
@@ -390,7 +408,7 @@ import { AuthService } from '../../services/auth.service';
             </div>
             <div class="detalle-item">
               <span class="label">Ubicación Exacta:</span>
-              <span class="value">📍 {{ difuntoSeleccionado.cementerioNombre || 'Cementerio' }} - {{ difuntoSeleccionado.ubicacion }}</span>
+              <span class="value"><svg style="margin-right:4px;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {{ difuntoSeleccionado.cementerioNombre || 'Cementerio' }} - {{ difuntoSeleccionado.ubicacion }}</span>
             </div>
             
             <div class="detalle-grid">
@@ -399,12 +417,20 @@ import { AuthService } from '../../services/auth.service';
                 <span class="value">{{ difuntoSeleccionado.fechaFallecimiento || 'N/A' }}</span>
               </div>
               <div class="detalle-item">
-                <span class="label">Fecha Nacimiento:</span>
-                <span class="value">{{ difuntoSeleccionado.fechaNacimiento || 'N/A' }}</span>
+                <span class="label">Hora Fallecimiento:</span>
+                <span class="value">{{ difuntoSeleccionado.horaFallecimiento || 'N/A' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Fecha Entierro:</span>
                 <span class="value">{{ difuntoSeleccionado.fechaEntierro || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Hora Entierro:</span>
+                <span class="value">{{ difuntoSeleccionado.horaEntierro || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Causa de Muerte:</span>
+                <span class="value">{{ difuntoSeleccionado.causaMuerte || 'N/A' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Años Transcurridos:</span>
@@ -413,10 +439,69 @@ import { AuthService } from '../../services/auth.service';
             </div>
 
             <hr class="divider">
+            <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Datos Personales</h3>
+            <div class="detalle-grid">
+              <div class="detalle-item">
+                <span class="label">Fecha Nacimiento:</span>
+                <span class="value">{{ difuntoSeleccionado.fechaNacimiento || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Edad:</span>
+                <span class="value">{{ difuntoSeleccionado.edad ? difuntoSeleccionado.edad + ' años' : 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Sexo:</span>
+                <span class="value">{{ difuntoSeleccionado.sexo || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Estado Civil:</span>
+                <span class="value">{{ difuntoSeleccionado.estadoCivil || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item" style="grid-column: span 2;">
+                <span class="label">Domicilio del Fallecido:</span>
+                <span class="value">{{ difuntoSeleccionado.domicilioFallecido || 'N/A' }}</span>
+              </div>
+            </div>
+
+            <hr class="divider">
+            <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Responsable</h3>
+            <div class="detalle-grid">
+              <div class="detalle-item">
+                <span class="label">Nombre Responsable:</span>
+                <span class="value">{{ difuntoSeleccionado.nombreResponsable || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Celular:</span>
+                <span class="value">{{ difuntoSeleccionado.celularResponsable || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item" style="grid-column: span 2;">
+                <span class="label">Domicilio Responsable:</span>
+                <span class="value">{{ difuntoSeleccionado.domicilioResponsable || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item" style="grid-column: span 2;">
+                <span class="label">Firmas Autorizadas:</span>
+                <span class="value">{{ difuntoSeleccionado.firmasAutorizadas ? 'Sí' : 'No' }}</span>
+              </div>
+            </div>
+            
+            <hr class="divider" *ngIf="difuntoSeleccionado.tipoCementerio === 'Privado' || difuntoSeleccionado.tipoCementerio === 'Osario'">
+            <h3 *ngIf="difuntoSeleccionado.tipoCementerio === 'Privado' || difuntoSeleccionado.tipoCementerio === 'Osario'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Placa y Material</h3>
+            <div class="detalle-grid" *ngIf="difuntoSeleccionado.tipoCementerio === 'Privado' || difuntoSeleccionado.tipoCementerio === 'Osario'">
+              <div class="detalle-item">
+                <span class="label">Material Placa:</span>
+                <span class="value">{{ difuntoSeleccionado.materialPlaca || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Medidas Placa:</span>
+                <span class="value">{{ difuntoSeleccionado.medidasPlaca || 'N/A' }}</span>
+              </div>
+            </div>
+
+            <hr class="divider">
 
             <div class="detalle-item" *ngIf="difuntoSeleccionado.tipoCementerio !== 'Privado'">
               <div class="alerta-publico">
-                <strong>ℹ️ Espacio Público.</strong> Este es un espacio único para el público general, por lo que no ocupa compañeros.
+                <svg style="margin-right:4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> <strong>Espacio Público.</strong> Este es un espacio único para el público general, por lo que no ocupa compañeros.
               </div>
             </div>
 
@@ -435,7 +520,7 @@ import { AuthService } from '../../services/auth.service';
               <span class="label">Documentos Adjuntos:</span>
               <ul class="value-list">
                 <li *ngFor="let doc of difuntoSeleccionado.documentos">
-                  📄 <a href="javascript:void(0)" (click)="verDocumento(doc)" style="color: #3b82f6; text-decoration: underline; cursor: pointer;">{{ doc.nombre }}</a>
+                  <svg style="margin-right:4px; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> <a href="javascript:void(0)" (click)="verDocumento(doc)" style="color: #3b82f6; text-decoration: underline; cursor: pointer;">{{ doc.nombre }}</a>
                 </li>
               </ul>
             </div>
@@ -452,10 +537,30 @@ import { AuthService } from '../../services/auth.service';
             </div>
 
             <div class="detalle-item">
-              <span class="label">Estado de Pago:</span>
-              <span class="status-badge" [class.success]="difuntoSeleccionado.estadoPago === 'AL DÍA'" [class.error]="difuntoSeleccionado.estadoPago === 'PENDIENTE'">
-                {{ difuntoSeleccionado.estadoPago }}
-              </span>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="label" style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">Historial de Pagos
+                  <span class="status-badge" [class.success]="estadoPagoDetalle === 'Al Día'" [class.error]="estadoPagoDetalle !== 'Al Día'">
+                    {{ estadoPagoDetalle }}
+                  </span>
+                </span>
+              </div>
+              
+              <div *ngIf="!pagosCargados || pagosCargados.length === 0" style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 1rem 0; background: #f9fafb; border-radius: 8px; margin-top: 0.5rem;">
+                No hay pagos registrados
+              </div>
+
+              <div *ngFor="let pago of pagosCargados" style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #e5e7eb; padding: 0.8rem 1rem; border-radius: 8px; margin-top: 0.5rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                  <strong style="color: #374151; font-size: 0.95rem;">{{ pago.concepto }}</strong>
+                  <span style="color: #6b7280; font-size: 0.8rem;">{{ pago.fecha }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <span style="font-family: monospace; font-weight: bold; color: #111827; font-size: 1.1rem;">$ {{ pago.monto }}</span>
+                  <span class="status-badge" [ngStyle]="{'background': pago.estado === 'PAGADO' ? '#dcfce7' : '#fee2e2', 'color': pago.estado === 'PAGADO' ? '#16a34a' : '#ef4444'}" style="padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">
+                    {{ pago.estado }}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
           <div class="modal-actions">
@@ -745,6 +850,26 @@ import { AuthService } from '../../services/auth.service';
     .tipo-buttons button:hover { border-color: #fce4f0; background: #fff0f6; }
     .tipo-buttons button.active { background: #d63384; color: white; border-color: #d63384; box-shadow: 0 4px 12px rgba(214, 51, 132, 0.3); transform: translateY(-2px); }
     .validaciones-caja { margin-top: 1rem; padding: 1rem; border: 2px dashed #fce4f0; border-radius: 12px; background: #fffafc; }
+
+    /* RESPONSIVE MÓVIL */
+    @media (max-width: 1000px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .page-container { padding: 1rem; }
+      .header-section { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .header-section .btn-primary { width: 100%; justify-content: center; }
+      .stats-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .filters-card { flex-direction: column; align-items: stretch; gap: 1rem; }
+      .modal-content { width: 100%; height: 100%; max-height: 100vh; border-radius: 0; }
+      .modal-lg { width: 100%; }
+      .form-row, .form-row-3 { grid-template-columns: 1fr; gap: 0.5rem; }
+      .detalle-grid, .cripta-grid { grid-template-columns: 1fr; }
+      .modal-header { padding: 1rem; }
+      .modal-body { padding: 1rem; }
+      .modal-actions { padding: 1rem; }
+      .btn-cancel, .btn-primary { flex: 1; text-align: center; justify-content: center; }
+    }
   `]
 })
 export class DifuntosComponent implements OnInit {
@@ -771,6 +896,15 @@ export class DifuntosComponent implements OnInit {
   cementerioSeleccionadoId: number | null = null;
   cementerioEsPrivado = false;
   tipoInhumacionUI: 'cripta' | 'osario' = 'cripta';
+
+  // Pagos history
+  pagosCargados: any[] = [];
+
+  get estadoPagoDetalle(): string {
+    if (!this.pagosCargados || this.pagosCargados.length === 0) return 'Sin Pagos';
+    const tienePendiente = this.pagosCargados.some(p => p.estado === 'PENDIENTE');
+    return tienePendiente ? 'Pendiente' : 'Al Día';
+  }
 
   // Espacios
   espacios: any[] = [];
@@ -1043,6 +1177,10 @@ export class DifuntosComponent implements OnInit {
 
   verDetalles(d: DifuntoDTO) {
     this.difuntoSeleccionado = d;
+    this.pagosCargados = [];
+    this.http.get<any[]>(`${environment.apiUrl}/pagos/difunto/${d.id}`).subscribe(pagos => {
+      this.pagosCargados = pagos;
+    });
     this.showModalDetalles = true;
   }
 

@@ -78,32 +78,34 @@ import { Router } from '@angular/router';
             <p>No hay difuntos registrados en parcelas privadas.</p>
           </div>
           
-          <table *ngIf="resumen.detallesPrivados.length > 0">
-            <thead>
-              <tr>
-                <th>Difunto</th>
-                <th>Ubicación</th>
-                <th>Propietario / Dueño</th>
-                <th>Beneficiarios</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let det of resumen.detallesPrivados">
-                <td><strong>{{ det.difunto }}</strong></td>
-                <td>
-                  <span class="badge">{{ det.cementerio }}</span>
-                  <span class="badge light">{{ det.parcela }}</span>
-                </td>
-                <td class="owner-cell">{{ det.propietario }}</td>
-                <td>
-                  <ul class="ben-list" *ngIf="det.beneficiarios && det.beneficiarios.length > 0">
-                    <li *ngFor="let b of det.beneficiarios">{{ b.nombre || b }}</li>
-                  </ul>
-                  <span class="text-muted" *ngIf="!det.beneficiarios || det.beneficiarios.length === 0">Ninguno</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-responsive">
+            <table *ngIf="resumen.detallesPrivados.length > 0">
+              <thead>
+                <tr>
+                  <th>Difunto</th>
+                  <th>Ubicación</th>
+                  <th>Propietario / Dueño</th>
+                  <th>Beneficiarios</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let det of resumen.detallesPrivados">
+                  <td><strong>{{ det.difunto }}</strong></td>
+                  <td>
+                    <span class="badge">{{ det.cementerio }}</span>
+                    <span class="badge light">{{ det.parcela }}</span>
+                  </td>
+                  <td class="owner-cell">{{ det.propietario }}</td>
+                  <td>
+                    <ul class="ben-list" *ngIf="det.beneficiarios && det.beneficiarios.length > 0">
+                      <li *ngFor="let b of det.beneficiarios">{{ b.nombre || b }}</li>
+                    </ul>
+                    <span class="text-muted" *ngIf="!det.beneficiarios || det.beneficiarios.length === 0">Ninguno</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </ng-container>
     </div>

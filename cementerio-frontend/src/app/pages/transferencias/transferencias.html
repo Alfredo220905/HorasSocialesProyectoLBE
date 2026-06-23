@@ -27,6 +27,11 @@
         </div>
 
         <div class="form-group">
+          <label>DUI del Comprador</label>
+          <input type="text" name="compradorDui" [(ngModel)]="nuevaTransferencia.compradorDui" (input)="formatearDUI($event)" placeholder="00000000-0" maxlength="10" required>
+        </div>
+
+        <div class="form-group">
           <label>Terreno / Parcela a Transferir</label>
           <select name="cripta" [(ngModel)]="nuevaTransferencia.criptaId" [disabled]="!nuevaTransferencia.vendedorId || criptasDelVendedor.length === 0" required>
             <option [ngValue]="undefined">Seleccione el terreno a transferir</option>

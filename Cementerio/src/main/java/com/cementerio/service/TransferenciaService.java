@@ -59,7 +59,7 @@ public class TransferenciaService {
         } else if (dto.getCompradorNombre() != null && !dto.getCompradorNombre().isEmpty()) {
             comprador = new Cliente();
             comprador.setNombre(dto.getCompradorNombre());
-            comprador.setDui("S/N");
+            comprador.setDui(dto.getCompradorDui() != null && !dto.getCompradorDui().isEmpty() ? dto.getCompradorDui() : "S/N");
             comprador = clienteRepository.save(comprador);
         } else {
             throw new RuntimeException("Debe proveer un compradorId o un compradorNombre");

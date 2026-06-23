@@ -93,3 +93,10 @@
 .btn-save:active {
   transform: translateY(1px);
 }
+
+/* RESPONSIVE MÓVIL */
+@media (max-width: 768px) {
+  .header-container { flex-direction: column; gap: 1rem; align-items: stretch; text-align: center; }
+  .btn-logout { width: 100%; }
+  .form-card { padding: 1.5rem 1rem; width: 100%; box-sizing: border-box; }
+}

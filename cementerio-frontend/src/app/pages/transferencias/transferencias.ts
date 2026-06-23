@@ -17,6 +17,8 @@ export class Transferencias implements OnInit {
   nuevaTransferencia: TransferenciaDTO = {
     vendedorId: undefined,
     compradorId: undefined,
+    compradorNombre: '',
+    compradorDui: '',
     criptaId: undefined,
     fechaTransferencia: new Date().toISOString().split('T')[0],
     detalles: ''
@@ -55,6 +57,15 @@ export class Transferencias implements OnInit {
     }
   }
 
+  formatearDUI(event: any): void {
+    let input = event.target.value.replace(/\D/g, '').substring(0, 9);
+    if (input.length > 8) {
+      input = input.substring(0, 8) + '-' + input.substring(8);
+    }
+    this.nuevaTransferencia.compradorDui = input;
+    event.target.value = input;
+  }
+
   cargarHistorial(): void {
     this.transferenciaService.listarTodos().subscribe({
       next: (data) => {
@@ -67,8 +78,8 @@ export class Transferencias implements OnInit {
   }
 
   registrar(): void {
-    if (!this.nuevaTransferencia.vendedorId || !this.nuevaTransferencia.compradorNombre || !this.nuevaTransferencia.criptaId) {
-      this.errorMsg = 'Debe ingresar el ID del vendedor, el nombre del comprador y el ID de la cripta.';
+    if (!this.nuevaTransferencia.vendedorId || !this.nuevaTransferencia.compradorNombre || !this.nuevaTransferencia.compradorDui || !this.nuevaTransferencia.criptaId) {
+      this.errorMsg = 'Debe ingresar el ID del vendedor, el nombre y DUI del comprador y el ID de la cripta.';
       return;
     }
     
@@ -84,6 +95,7 @@ export class Transferencias implements OnInit {
         this.nuevaTransferencia = {
           vendedorId: undefined,
           compradorNombre: '',
+          compradorDui: '',
           criptaId: undefined,
           fechaTransferencia: new Date().toISOString().split('T')[0],
           detalles: ''

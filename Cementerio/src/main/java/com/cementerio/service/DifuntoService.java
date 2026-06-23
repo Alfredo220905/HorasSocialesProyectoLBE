@@ -256,10 +256,14 @@ public class DifuntoService {
             throw new RuntimeException("Debe asignar un Espacio o un Osario para el nuevo difunto.");
         }
 
-        if (dto.getDocumentos() != null && !dto.getDocumentos().isEmpty()) {
+        if (dto.getDocumentos() != null) {
             try {
-                ObjectMapper mapper = new ObjectMapper();
-                difunto.setDocumentosJson(mapper.writeValueAsString(dto.getDocumentos()));
+                if (dto.getDocumentos().isEmpty()) {
+                    difunto.setDocumentosJson(null);
+                } else {
+                    ObjectMapper mapper = new ObjectMapper();
+                    difunto.setDocumentosJson(mapper.writeValueAsString(dto.getDocumentos()));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

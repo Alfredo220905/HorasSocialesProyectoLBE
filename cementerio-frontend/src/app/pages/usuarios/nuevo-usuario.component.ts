@@ -13,7 +13,10 @@ import { CementerioService } from '../../services/cementerio.service';
     <div class="container">
       <div class="card">
         <div class="card-header">
-          <h2>👤 Registro de Nuevo Usuario</h2>
+          <div class="header-title-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <h2>Registro de Nuevo Usuario</h2>
+          </div>
           <p>Complete los datos para generar el acceso</p>
         </div>
 
@@ -51,7 +54,10 @@ import { CementerioService } from '../../services/cementerio.service';
           <div class="pass-container">
             <div class="pass-label">
               <label>Contraseña Temporal</label>
-              <button class="btn-gen" (click)="generarPass()">🎲 GENERAR</button>
+              <button class="btn-gen" (click)="generarPass()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><circle cx="15.5" cy="15.5" r="1.5"></circle></svg>
+                GENERAR
+              </button>
             </div>
             <div class="pass-value" [class.generated]="passwordGenerada">
               {{ passwordGenerada || '--- pendiente de generar ---' }}
@@ -69,7 +75,9 @@ import { CementerioService } from '../../services/cementerio.service';
     <div class="modal-backdrop" *ngIf="mostrarModal">
       <div class="modal-content">
         <div class="modal-header-success">
-          <div class="check-circle">✓</div>
+          <div class="check-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
           <h3>Usuario Registrado</h3>
         </div>
         <div class="modal-body">
@@ -91,8 +99,9 @@ import { CementerioService } from '../../services/cementerio.service';
     .container { padding: 2rem; display: flex; justify-content: center; background: var(--bg-color); min-height: 80vh; }
     .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 15px 50px var(--shadow-color); width: 100%; max-width: 500px; overflow: hidden; border: 1px solid var(--border-color); }
     .card-header { background: var(--primary-color); color: white; padding: 2.5rem 2rem; text-align: center; }
+    .header-title-wrapper { display: flex; align-items: center; justify-content: center; gap: 0.8rem; margin-bottom: 0.5rem; }
     .card-header h2 { margin: 0; font-size: 1.6rem; letter-spacing: 0.5px; }
-    .card-header p { margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.95rem; }
+    .card-header p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
 
     .form-body { padding: 2.5rem; }
     .form-group { margin-bottom: 1.8rem; }
@@ -108,7 +117,7 @@ import { CementerioService } from '../../services/cementerio.service';
 
     .pass-container { margin: 2.5rem 0; background: rgba(215, 51, 135, 0.05); padding: 1.8rem; border-radius: 12px; border: 1px solid var(--border-color); }
     .pass-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .btn-gen { background: var(--text-main); color: var(--bg-color); border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.8rem; transition: 0.2s; }
+    .btn-gen { display: flex; align-items: center; gap: 0.5rem; background: var(--text-main); color: var(--bg-color); border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.8rem; transition: 0.2s; }
     .btn-gen:hover { opacity: 0.8; transform: scale(1.05); }
     .pass-value { background: var(--bg-color); padding: 1.2rem; border-radius: 8px; text-align: center; font-family: 'Courier New', monospace; color: var(--text-muted); border: 1.5px dashed var(--border-color); font-size: 1.1rem; }
     .pass-value.generated { color: var(--primary-color); font-weight: 800; font-size: 1.6rem; border: 2px solid var(--primary-color); }
@@ -121,7 +130,7 @@ import { CementerioService } from '../../services/cementerio.service';
     .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
     .modal-content { background: var(--card-bg); border-radius: 20px; width: 95%; max-width: 420px; overflow: hidden; animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid var(--border-color); }
     .modal-header-success { background: var(--bg-color); padding: 2.5rem; text-align: center; border-bottom: 1px solid var(--border-color); }
-    .check-circle { width: 60px; height: 60px; background: #22c55e; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; margin: 0 auto 1.2rem; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); }
+    .check-circle { width: 60px; height: 60px; background: #22c55e; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 1.2rem; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); }
     .modal-body { padding: 2.5rem; }
     .data-item { margin-bottom: 1.2rem; font-size: 1.05rem; color: var(--text-main); }
     .password-result { background: var(--bg-color); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px dashed var(--primary-color); margin-top: 1.5rem; }
@@ -133,6 +142,18 @@ import { CementerioService } from '../../services/cementerio.service';
     .btn-finish:hover { opacity: 0.9; }
 
     @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+    /* RESPONSIVE MÓVIL */
+    @media (max-width: 576px) {
+      .container { padding: 1rem; }
+      .card-header { padding: 1.5rem 1rem; }
+      .form-body { padding: 1.5rem 1rem; }
+      .pass-label { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
+      .btn-gen { width: 100%; justify-content: center; padding: 0.8rem; }
+      .modal-header-success { padding: 1.5rem; }
+      .modal-body { padding: 1.5rem; }
+      .modal-footer { padding: 0 1.5rem 1.5rem; }
+    }
   `]
 })
 export class NuevoUsuarioComponent implements OnInit {

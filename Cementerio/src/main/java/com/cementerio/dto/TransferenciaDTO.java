@@ -10,6 +10,7 @@ public class TransferenciaDTO {
     private String vendedorNombre;
     private Long compradorId;
     private String compradorNombre;
+    private String compradorDui;
     private Long criptaId;
     private LocalDate fechaTransferencia;
     private String detalles;

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
 
 interface Cliente {
   id?: number;
@@ -26,7 +27,10 @@ interface Cliente {
     <div class="main-grid" [ngClass]="{'has-selection': propietarioSeleccionado}">
       <div class="card">
         <div class="search-bar">
-          <input type="text" placeholder="Buscar propietario por nombre o DUI..." [(ngModel)]="filtro">
+          <div class="search-input-wrapper">
+            <svg class="search-icon-svg" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Buscar propietario por nombre o DUI..." [(ngModel)]="filtro">
+          </div>
         </div>
 
         <table class="data-table">
@@ -57,12 +61,20 @@ interface Cliente {
       <!-- Panel Lateral de Detalles -->
       <div class="card detail-panel animate-fade-in" *ngIf="propietarioSeleccionado">
         <div class="panel-header">
-          <h3>{{ propietarioSeleccionado.nombre }}</h3>
-          <span class="badge">DUI: {{ propietarioSeleccionado.dui }}</span>
-          <button class="close-btn" (click)="cerrarSeleccion()">×</button>
+          <div class="header-info">
+            <h3>{{ propietarioSeleccionado.nombre }}</h3>
+            <span class="badge">DUI: {{ propietarioSeleccionado.dui }}</span>
+            <div class="admin-actions" *ngIf="isAdmin" style="margin-top: 0.8rem; display: flex; gap: 0.5rem;">
+               <button class="btn-action edit" (click)="abrirModalEditar(propietarioSeleccionado)">Editar</button>
+               <button class="btn-action delete" (click)="eliminarCliente(propietarioSeleccionado)">Eliminar</button>
+            </div>
+          </div>
+          <button class="close-btn" (click)="cerrarSeleccion()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
         
-        <div class="info-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start;">
+        <div class="info-group">
           <div>
             <p><strong>Teléfono:</strong> {{ propietarioSeleccionado.telefono || 'No registrado' }}</p>
             <p><strong>Correo:</strong> {{ propietarioSeleccionado.correo || 'No registrado' }}</p>
@@ -125,20 +137,57 @@ interface Cliente {
         </div>
       </div>
     </div>
+
+    <!-- Modal de Edición -->
+    <div class="modal-overlay" *ngIf="modalEditarVisible">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Editar Propietario</h3>
+        </div>
+        <div class="modal-body form-grid">
+          <div class="form-group">
+            <label>Nombre Completo</label>
+            <input type="text" [(ngModel)]="clienteEdicion.nombre" required>
+          </div>
+          <div class="form-group">
+            <label>DUI</label>
+            <input type="text" [(ngModel)]="clienteEdicion.dui" (input)="formatearDUI($event)" maxlength="10" required>
+          </div>
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" [(ngModel)]="clienteEdicion.telefono">
+          </div>
+          <div class="form-group">
+            <label>Correo Electrónico</label>
+            <input type="email" [(ngModel)]="clienteEdicion.correo">
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Dirección</label>
+            <textarea [(ngModel)]="clienteEdicion.direccion" rows="2" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1;"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer" style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button class="btn-cancel" (click)="cerrarModalEditar()">Cancelar</button>
+          <button class="btn-save" (click)="guardarEdicion()">Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .animate-fade-in { animation: fadeIn 0.3s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
 
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .card { background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(214,51,132,0.06); margin-bottom: 1rem; }
+    .page-header h2 { margin: 0; font-size: 1.8rem; color: #1e293b; }
+    .card { background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(214,51,132,0.06); margin-bottom: 1rem; border: 1px solid #f1f5f9; }
     
     .main-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; transition: all 0.3s ease; }
     .main-grid.has-selection { grid-template-columns: 1fr 1fr; }
-    @media (max-width: 1000px) { .main-grid.has-selection { grid-template-columns: 1fr; } }
 
     .search-bar { margin-bottom: 1.2rem; }
-    input { width: 100%; padding: 1rem 1.2rem; border: 2px solid #fce4f0; border-radius: 12px; font-size: 1.05rem; transition: 0.2s; }
+    .search-input-wrapper { position: relative; display: flex; align-items: center; }
+    .search-icon-svg { position: absolute; left: 1rem; color: #94a3b8; }
+    input { width: 100%; padding: 1rem 1.2rem 1rem 3rem; border: 2px solid #fce4f0; border-radius: 12px; font-size: 1.05rem; transition: 0.2s; }
     input:focus { outline: none; border-color: #d63384; box-shadow: 0 0 0 4px rgba(214,51,132,0.1); }
     
     .data-table { width: 100%; border-collapse: collapse; }
@@ -161,12 +210,13 @@ interface Cliente {
     
     .info-group p { margin: 0.5rem 0; color: #475569; }
     .info-group strong { color: #1e293b; width: 80px; display: inline-block;}
+    .info-group { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
     
     .difuntos-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
     .difunto-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; background: #f8fafc; transition: 0.2s; border-left: 4px solid #d63384; }
     .difunto-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateY(-2px); }
     .difunto-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
-    .difunto-header h5 { margin: 0; font-size: 1.1rem; color: #1e293b; }
+    .difunto-header h5 { margin: 0; font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
     .status-badge { font-size: 0.7rem; background: #e0f2fe; color: #0369a1; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700; }
     
     .difunto-body { display: flex; flex-direction: column; gap: 0.3rem; }
@@ -176,6 +226,35 @@ interface Cliente {
     
     .empty-state { padding: 2rem; text-align: center; color: #94a3b8; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 1rem; }
     .empty { text-align: center; color: #94a3b8; padding: 3rem !important; }
+
+    /* Modales */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+    .modal-content { background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal-header h3 { margin: 0 0 1.5rem 0; color: #8a1f53; font-size: 1.4rem; border-bottom: 2px solid #fce4f0; padding-bottom: 0.5rem;}
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 0.4rem; }
+    .form-group input { padding: 0.8rem; font-size: 0.95rem; border: 1px solid #cbd5e1; border-radius: 8px; }
+    .btn-cancel { background: #f1f5f9; color: #475569; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-save { background: #d63384; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-save:hover { background: #b02a37; }
+
+    .btn-action.edit { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+    .btn-action.delete { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
+
+    /* RESPONSIVE MÓVIL */
+    @media (max-width: 1000px) { 
+      .main-grid.has-selection { grid-template-columns: 1fr; } 
+    }
+    @media (max-width: 768px) {
+      .page-header h2 { font-size: 1.5rem; }
+      .card { padding: 1rem; }
+      .panel-header { flex-direction: column; align-items: flex-start; gap: 1rem; position: relative; }
+      .close-btn { position: absolute; right: 0; top: 0; }
+      .info-group { grid-template-columns: 1fr !important; }
+      .data-row { flex-direction: column; border-bottom: none; gap: 0.2rem; margin-bottom: 0.5rem; background: #f1f5f9; padding: 0.5rem; border-radius: 6px; }
+      .data-row strong { text-align: left; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
   `]
 })
 export class ClientesComponent implements OnInit {
@@ -188,11 +267,17 @@ export class ClientesComponent implements OnInit {
   propietarioSeleccionado: Cliente | null = null;
   difuntos: any[] = [];
   cargandoDifuntos = false;
+  isAdmin = false;
 
-  constructor(private http: HttpClient) {}
+  modalEditarVisible = false;
+  clienteEdicion: Cliente = { dui: '', nombre: '' };
+
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   ngOnInit() {
     this.cargar();
+    const role = this.authService.getUserRole();
+    this.isAdmin = role === 'ADMIN' || role === 'ADMINISTRADOR';
   }
 
   get clientesFiltrados() {
@@ -238,6 +323,66 @@ export class ClientesComponent implements OnInit {
       return JSON.parse(json);
     } catch (e) {
       return [];
+    }
+  }
+
+  // EDICION Y ELIMINACION
+  formatearDUI(event: any) {
+    let input = event.target.value.replace(/\D/g, '').substring(0, 9);
+    if (input.length > 8) {
+      input = input.substring(0, 8) + '-' + input.substring(8);
+    }
+    this.clienteEdicion.dui = input;
+    event.target.value = input;
+  }
+
+  abrirModalEditar(cliente: Cliente) {
+    this.clienteEdicion = { ...cliente };
+    this.modalEditarVisible = true;
+  }
+
+  cerrarModalEditar() {
+    this.modalEditarVisible = false;
+  }
+
+  guardarEdicion() {
+    if (!this.clienteEdicion.nombre || !this.clienteEdicion.dui) {
+      alert('Nombre y DUI son obligatorios.');
+      return;
+    }
+    
+    this.http.put(`${this.clientesUrl}/${this.clienteEdicion.id}`, this.clienteEdicion).subscribe({
+      next: () => {
+        alert('Propietario actualizado correctamente.');
+        this.cerrarModalEditar();
+        this.cargar();
+        if (this.propietarioSeleccionado?.id === this.clienteEdicion.id) {
+          this.propietarioSeleccionado = { ...this.clienteEdicion };
+        }
+      },
+      error: (err) => {
+        alert('Error al actualizar el propietario: ' + (err.error?.message || err.message));
+      }
+    });
+  }
+
+  eliminarCliente(cliente: Cliente) {
+    if (this.difuntos.length > 0) {
+      alert('No se puede eliminar este propietario porque tiene difuntos asociados en sus propiedades. Elimine los expedientes primero o realice una transferencia.');
+      return;
+    }
+    
+    if (confirm(`¿Está seguro que desea eliminar a ${cliente.nombre}? Esta acción no se puede deshacer.`)) {
+      this.http.delete(`${this.clientesUrl}/${cliente.id}`).subscribe({
+        next: () => {
+          alert('Propietario eliminado correctamente.');
+          this.cerrarSeleccion();
+          this.cargar();
+        },
+        error: (err) => {
+          alert('Error al eliminar el propietario: ' + (err.error?.message || err.message));
+        }
+      });
     }
   }
 }

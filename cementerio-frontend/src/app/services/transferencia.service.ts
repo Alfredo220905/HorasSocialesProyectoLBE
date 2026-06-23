@@ -9,6 +9,7 @@ export interface TransferenciaDTO {
   vendedorNombre?: string;
   compradorId?: number;
   compradorNombre?: string;
+  compradorDui?: string;
   criptaId?: number;
   fechaTransferencia?: string;
   detalles?: string;

@@ -41,26 +41,32 @@ import { HttpClient } from '@angular/common/http';
 
         <div class="seccion-content" *ngIf="seccionSeleccionada">
 
-          <!-- BARRA DE ACCIÓN: Botón Añadir Propietario (Solo PRIVADO) -->
-          <div class="section-action-bar" *ngIf="seccionSeleccionada.nombre === 'PRIVADO'">
-            <button class="btn-add-owner" (click)="abrirModalPropietario()">
-              + Añadir Propietario
-            </button>
-          </div>
-
-          <!-- Sidebar de Parcelas -->
-          <div class="parcelas-sidebar">
-            <h3>Parcelas</h3>
-            <div class="parcela-list">
-              <button 
-                *ngFor="let par of seccionSeleccionada.parcelas" 
-                class="parcela-btn"
-                [class.active]="parcelaSeleccionada?.id === par.id"
-                (click)="seleccionarParcela(par)">
-                {{ par.nombre }}
-              </button>
-              <div class="empty-text" *ngIf="seccionSeleccionada.parcelas.length === 0">
-                No hay parcelas en esta sección.
+          <!-- Filtros Superiores (Común para Público y Privado) -->
+          <div class="top-filters-bar">
+            <div class="filter-group">
+              <label>Seleccionar Parcela</label>
+              <select [(ngModel)]="parcelaSeleccionada" (ngModelChange)="seleccionarParcela($event)">
+                <option *ngFor="let par of seccionSeleccionada.parcelas" [ngValue]="par">{{ par.nombre }}</option>
+              </select>
+            </div>
+            <div class="filter-group" *ngIf="seccionSeleccionada.nombre === 'PRIVADO'">
+              <label>Seleccionar Lote</label>
+              <select [(ngModel)]="selectedLotePrivadoId" (change)="filtrarCriptas()">
+                <option [ngValue]="null">Todos los Lotes</option>
+                <option *ngFor="let c of criptasPrivadas" [value]="c.id">Lote F{{ c.fila }}-C{{ c.columna }}</option>
+              </select>
+            </div>
+            <div class="filter-group search-group" *ngIf="seccionSeleccionada.nombre === 'PRIVADO'">
+              <label>Buscar Lote/Propietario</label>
+              <div class="search-input-wrapper">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input 
+                  type="text" 
+                  [ngModel]="terminoBusqueda" 
+                  placeholder="Buscar difunto o propietario..." 
+                  class="search-input"
+                  (input)="onSearchInput($event)"
+                />
               </div>
             </div>
           </div>
@@ -70,163 +76,148 @@ import { HttpClient } from '@angular/common/http';
             <div class="detail-header">
               <div class="header-text-container">
                 <h3>Información de {{ parcelaSeleccionada.nombre }}</h3>
-                <p>Datos exclusivos para <strong>{{ cementerio.nombre }}</strong></p>
+                <p>Datos de <strong>{{ cementerio.nombre }}</strong></p>
               </div>
               <div class="search-container">
                 <input 
                   type="text" 
-                  [(ngModel)]="terminoBusqueda" 
-                  placeholder="Buscar difunto, propietario o estado..." 
+                  [ngModel]="terminoBusqueda" 
+                  placeholder="Buscar difunto..." 
                   class="search-input"
-                  (input)="filtrarEspacios()"
+                  (input)="onSearchInput($event)"
                 />
               </div>
             </div>
 
             <div class="table-card">
-              <!-- SELECTOR DE LOTE PÚBLICO -->
-              <div class="public-lote-selector" *ngIf="seccionSeleccionada.nombre !== 'PRIVADO' && criptasPublicas.length > 0" style="margin-bottom: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 8px;">
-                <label style="font-weight: 600; margin-right: 0.5rem; color: #374151;">Seleccionar Lote:</label>
-                <select [(ngModel)]="selectedLotePublicoId" (change)="actualizarLotePublico()" style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #d1d5db; min-width: 250px;">
-                  <option *ngFor="let c of criptasPublicas" [value]="c.id">Fila {{ c.fila }} - Columna {{ c.columna }} ({{ c.espacios?.length || 0 }} espacios)</option>
-                </select>
-              </div>
+              <!-- VISTA PÚBLICA -->
+              <div class="public-view" *ngIf="seccionSeleccionada.nombre !== 'PRIVADO'">
+                <div class="public-lote-selector" *ngIf="criptasPublicas.length > 0" style="margin-bottom: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 8px;">
+                  <label style="font-weight: 600; margin-right: 0.5rem; color: #374151;">Seleccionar Lote:</label>
+                  <select [(ngModel)]="selectedLotePublicoId" (change)="actualizarLotePublico()" style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #d1d5db; min-width: 250px;">
+                    <option *ngFor="let c of criptasPublicas" [value]="c.id">Fila {{ c.fila }} - Columna {{ c.columna }} ({{ c.espacios?.length || 0 }} espacios)</option>
+                  </select>
+                </div>
 
-              <!-- TABLA PÚBLICO -->
-              <table *ngIf="seccionSeleccionada.nombre !== 'PRIVADO'">
-                <thead>
-                  <tr>
-                    <th>Lote</th>
-                    <th>Espacio</th>
-                    <th>Estado</th>
-                    <th>Difunto</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <ng-container *ngFor="let item of espaciosFiltrados">
-                    <tr>
-                      <td class="col-cripta">F{{ item.fila }} - C{{ item.columna }}</td>
-                      <td class="col-espacio">Nº {{ item.numero }}</td>
-                      <td>
-                        <span class="status-badge" [ngClass]="(item.estado || 'DISPONIBLE').toLowerCase()">
-                          {{ item.estado || 'DISPONIBLE' }}
-                        </span>
-                      </td>
-                      <td class="col-difunto">{{ item.difunto || '-- Vacío --' }}</td>
-                      <td>
-                        <div class="action-buttons">
-                          <button class="btn-xs btn-outline-pink" (click)="abrirModalVerDatos('difunto', item.difuntoObj)" *ngIf="item.difuntoObj">Ver Expediente</button>
-                          <button class="btn-xs btn-outline-pink" (click)="editarEspacio(item)">Editar Datos</button>
-                          <button class="btn-xs btn-outline-red" (click)="liberarEspacio(item)" *ngIf="item.difuntoObj">Liberar Espacio</button>
-                        </div>
-                      </td>
-                    </tr>
-                  </ng-container>
-                  <tr *ngIf="espaciosFiltrados.length === 0">
-                    <td colspan="5" class="text-center">No hay registros para mostrar en este lote.</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <!-- TABLA PRIVADO (AGRUPADA) -->
-              <table *ngIf="seccionSeleccionada.nombre === 'PRIVADO'">
-                <thead>
-                  <tr>
-                    <th>Dueño / Propietario</th>
-                    <th>Cripta / Lote</th>
-                    <th>Espacios Totales</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <ng-container *ngFor="let cr of criptasPrivadasFiltradas">
-                    <tr>
-                      <td class="col-owner">{{ cr.propietario }}</td>
-                      <td class="col-cripta">F{{ cr.fila }} - C{{ cr.columna }}</td>
-                      <td>{{ cr.espacios.length }} espacios</td>
-                      <td>
-                        <button class="btn-sm btn-outline" (click)="toggleDetalleCripta(cr)">
-                          {{ cr.mostrarDetalle ? 'Ocultar' : 'Ver Más' }}
-                        </button>
-                      </td>
-                    </tr>
-                    
-                    <tr *ngIf="cr.mostrarDetalle" class="expanded-row">
-                      <td colspan="4" class="expanded-cell">
-                        <div class="expanded-content">
-
-                          <!-- BENEFICIARIOS E INFORMACIÓN DETALLADA -->
-                          <div class="expanded-info-grid">
-                            
-                            <!-- Columna Propietario y Beneficiarios -->
-                            <div class="info-panel-col">
-                              <!-- Tarjeta Propietario Titular -->
-                              <div class="info-panel">
-                                <div class="info-panel-header">
-                                  <h4>Propietario Titular</h4>
-                                </div>
-                                <div class="propietario-card" *ngIf="cr.clienteObj">
-                                  <div class="prop-avatar">{{ cr.clienteObj.nombre.charAt(0).toUpperCase() }}</div>
-                                  <div class="prop-details">
-                                    <div class="prop-name">{{ cr.clienteObj.nombre }}</div>
-                                    <div class="prop-info" *ngIf="cr.clienteObj">
-                                      <div class="prop-info-item"><span class="label">DUI:</span> {{ cr.clienteObj.dui || 'No registrado' }}</div>
-                                      <button class="btn-outline-pink" style="margin-top: 1rem; width: 100%; font-size: 0.85rem;" (click)="abrirModalVerDatos('propietario', cr.clienteObj)">Ver Expediente Completo</button>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div *ngIf="!cr.clienteObj" class="empty-state-text">Sin propietario registrado.</div>
-                              </div>
-
-                            </div> <!-- Fin Columna Izquierda -->
-
-                            <!-- Columna Espacios y Difuntos -->
-                            <div class="info-panel">
-                              <div class="info-panel-header">
-                                <h4>Espacios y Difuntos</h4>
-                              </div>
-                              
-                              <div class="espacios-grid">
-                                <div class="espacio-card" *ngFor="let esp of cr.espacios">
-                                  <div class="esp-header">
-                                    <span class="esp-number">Espacio {{ esp.numero }}</span>
-                                    <span class="status-badge" [ngClass]="(esp.estado || 'DISPONIBLE').toLowerCase()">{{ esp.estado || 'DISPONIBLE' }}</span>
-                                  </div>
-                                  
-                                  <div class="esp-body">
-                                    <div *ngIf="esp.difuntoObj" class="difunto-info">
-                                      <div class="dif-name">✝ {{ esp.difuntoObj.nombre }}</div>
-                                      <div class="dif-dates">
-                                        <div *ngIf="esp.difuntoObj.fechaNacimiento"><span class="label">Nacimiento:</span> {{ esp.difuntoObj.fechaNacimiento }}</div>
-                                        <div *ngIf="esp.difuntoObj.fechaFallecimiento"><span class="label">Fallecimiento:</span> {{ esp.difuntoObj.fechaFallecimiento }}</div>
-                                        <div *ngIf="esp.difuntoObj.fechaEntierro"><span class="label">Entierro:</span> {{ esp.difuntoObj.fechaEntierro }}</div>
-                                      </div>
-                                    </div>
-                                    <div *ngIf="!esp.difuntoObj" class="empty-espacio">
-                                      Espacio vacío disponible para uso.
-                                    </div>
-                                  </div>
-                                  
-                                  <div class="esp-footer">
-                                    <button class="btn-xs btn-outline-pink" (click)="abrirModalVerDatos('difunto', esp.difuntoObj)" *ngIf="esp.difuntoObj">Ver Expediente</button>
-                                    <button class="btn-xs btn-outline-pink" (click)="editarEspacio(esp)">Editar Datos</button>
-                                    <button class="btn-xs btn-outline-red" (click)="liberarEspacio(esp)" *ngIf="esp.difunto">Liberar Espacio</button>
-                                  </div>
-                                </div>
-                              </div>
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Lote</th>
+                        <th>Espacio</th>
+                        <th>Estado</th>
+                        <th>Difunto</th>
+                        <th>DUI</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <ng-container *ngFor="let item of espaciosFiltrados">
+                        <tr>
+                          <td class="col-cripta">F{{ item.fila }} - C{{ item.columna }}</td>
+                          <td class="col-espacio">Nº {{ item.numero }}</td>
+                          <td>
+                            <span class="status-badge" [ngClass]="(item.estado || 'DISPONIBLE').toLowerCase()">
+                              {{ item.estado || 'DISPONIBLE' }}
+                            </span>
+                          </td>
+                          <td class="col-difunto">{{ item.difunto || '-- Vacío --' }}</td>
+                          <td>{{ item.difuntoObj?.dui || '--' }}</td>
+                          <td>
+                            <div class="action-buttons">
+                              <button class="btn-xs btn-outline-pink" (click)="abrirModalVerDatos('difunto', item.difuntoObj)" *ngIf="item.difuntoObj">Ver Expediente</button>
+                              <button class="btn-xs btn-outline-pink" (click)="editarEspacio(item)">Editar Datos</button>
+                              <button class="btn-xs btn-outline-red" (click)="liberarEspacio(item)" *ngIf="item.difuntoObj">Liberar Espacio</button>
                             </div>
-                            
+                          </td>
+                        </tr>
+                      </ng-container>
+                      <tr *ngIf="espaciosFiltrados.length === 0">
+                        <td colspan="5" class="text-center">No hay registros para mostrar en este lote.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+              <!-- VISTA PRIVADA (ACORDEÓN PAGINADO) -->
+              <div class="private-view" *ngIf="seccionSeleccionada.nombre === 'PRIVADO'">
+                <div class="lotes-grid accordion-layout">
+                  <div class="lote-card accordion-card" *ngFor="let cr of criptasPaginadas">
+                    <div class="lote-header" [class.vacant]="!cr.clienteObj" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 1.2rem;">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0; color: #1e293b;">Lote F{{cr.fila}}-C{{cr.columna}}</h4>
+                        <div>
+                          <span class="lote-badge">{{ cr.espacios.length }} Espacios</span>
+                          <span class="lote-badge" *ngIf="getEspaciosLibres(cr) > 0" style="background: #dcfce7; color: #16a34a; border-color: #86efac; margin-left: 0.5rem;">{{ getEspaciosLibres(cr) }} Disponibles</span>
+                        </div>
+                      </div>
+                      
+                      <div class="owner-info" style="margin-top: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: #db2777; font-weight: 700; text-transform: uppercase;">PROPIETARIO TITULAR</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.2rem;">
+                          <strong style="color: #be185d; font-size: 1.1rem; text-transform: uppercase;">{{ cr.propietario }}</strong>
+                          <div class="owner-actions">
+                            <button *ngIf="cr.clienteObj" class="btn-xs btn-outline-pink" (click)="abrirModalVerDatos('propietario', cr.clienteObj)">Ver Expediente</button>
+                            <button *ngIf="!cr.clienteObj" class="btn-xs btn-outline-pink" (click)="abrirModalPropietarioDirecto(cr.id)">Asignar Propietario</button>
                           </div>
                         </div>
-                      </td>
-                    </tr>
-                  </ng-container>
-                  <tr *ngIf="criptasPrivadasFiltradas.length === 0">
-                    <td colspan="4" class="text-center">No hay criptas/dueños que coincidan con la búsqueda.</td>
-                  </tr>
-                </tbody>
-              </table>
+                      </div>
+
+                      <button class="btn-toggle-accordion" (click)="toggleLoteExpanded(cr)" style="margin-top: 1rem; width: 100%; padding: 0.5rem; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 0.5rem; color: #475569; font-weight: 500; transition: all 0.2s;">
+                        {{ cr.expanded ? 'Ocultar Espacios' : 'Ver Espacios (' + cr.espacios.length + ')' }}
+                        <svg [style.transform]="cr.expanded ? 'rotate(180deg)' : 'rotate(0)'" style="transition: transform 0.3s;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                      </button>
+                    </div>
+                    
+                    <div class="lote-body" [class.expanded]="cr.expanded" style="display: none; padding: 0; border-top: 1px solid #e2e8f0;">
+                      <div class="table-responsive" style="margin: 0; border: none; box-shadow: none;">
+                        <table style="margin: 0;">
+                          <thead>
+                            <tr>
+                              <th>Espacio</th>
+                              <th>Estado</th>
+                              <th>Difunto</th>
+                              <th>DUI</th>
+                              <th>Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let esp of cr.espacios">
+                              <td class="col-espacio" style="font-weight: 600; color: #d73387;">Nº {{ esp.numero }}</td>
+                              <td>
+                                <span class="status-badge" [ngClass]="(esp.estado || 'DISPONIBLE').toLowerCase()">
+                                  {{ esp.estado || 'DISPONIBLE' }}
+                                </span>
+                              </td>
+                              <td class="col-difunto" [class.empty-text]="!esp.difuntoObj">{{ esp.difunto || '-- Vacío --' }}</td>
+                              <td>{{ esp.difuntoObj?.dui || '--' }}</td>
+                              <td>
+                                <div class="action-buttons">
+                                  <button class="btn-xs btn-outline-pink" (click)="abrirModalVerDatos('difunto', esp.difuntoObj)" *ngIf="esp.difuntoObj">Ver</button>
+                                  <button class="btn-xs btn-outline-pink" (click)="editarEspacio(esp)">Editar</button>
+                                  <button class="btn-xs btn-outline-red" (click)="liberarEspacio(esp)" *ngIf="esp.difuntoObj">✕</button>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="empty-state-grid" *ngIf="criptasPaginadas.length === 0">
+                    <p>No hay lotes que coincidan con los criterios de búsqueda.</p>
+                  </div>
+                </div>
+
+                <!-- CONTROLES DE PAGINACIÓN -->
+                <div class="pagination-controls" *ngIf="criptasPrivadasFiltradas.length > lotesPorPagina">
+                  <button class="btn-page" (click)="cambiarPagina(-1)" [disabled]="paginaActual === 1">Anterior</button>
+                  <span class="page-info">Página <strong>{{ paginaActual }}</strong> de <strong>{{ totalPaginasPrivado }}</strong></span>
+                  <button class="btn-page" (click)="cambiarPagina(1)" [disabled]="paginaActual === totalPaginasPrivado">Siguiente</button>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -262,7 +253,7 @@ import { HttpClient } from '@angular/common/http';
                 <select [(ngModel)]="propCriptaId" [disabled]="lotesDisponibles.length === 0">
                   <option [value]="null" disabled>{{ lotesDisponibles.length === 0 ? 'Seleccione parcela primero' : 'Seleccione lote...' }}</option>
                   <option *ngFor="let cr of lotesDisponibles" [value]="cr.id">
-                    Fila {{ cr.fila }} – Col {{ cr.columna }}{{ cr.cliente ? ' ★ ' + cr.cliente.nombre : '' }}
+                    Fila {{ cr.fila }} – Col {{ cr.columna }}{{ cr.cliente ? ' (Prop: ' + cr.cliente.nombre + ')' : '' }}
                   </option>
                 </select>
               </div>
@@ -342,25 +333,25 @@ import { HttpClient } from '@angular/common/http';
           <p class="modal-subtitle" style="margin-bottom: 1.5rem;">Complete la información relacionada con el espacio.</p>
           
           <div class="edit-form" style="max-height: 65vh; overflow-y: auto; padding-right: 10px;">
-            <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem;">Datos Personales</h4>
-            <div class="mp-row-2">
+            <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 0.5rem;">Datos Personales del Difunto</h4>
+            <div class="mp-row-2" style="margin-bottom: 1rem;">
               <div class="form-group">
-                <label>Nombre Completo</label>
-                <input type="text" [(ngModel)]="editModal.nombre" placeholder="Nombre completo" class="edit-input">
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Nombre completo *</label>
+                <input type="text" [(ngModel)]="editModal.nombre" placeholder="Nombre del difunto" class="edit-input">
               </div>
               <div class="form-group">
-                <label>DUI (No editable)</label>
-                <input type="text" [(ngModel)]="editModal.dui" placeholder="00000000-0" class="edit-input" [disabled]="true">
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">DUI</label>
+                <input type="text" [(ngModel)]="editModal.dui" placeholder="Ej: 01234567-8" class="edit-input" [disabled]="true" style="background: #f1f5f9;">
               </div>
             </div>
-
-            <div class="mp-row-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            
+            <div class="mp-row-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
               <div class="form-group">
-                <label>Edad</label>
-                <input type="number" [(ngModel)]="editModal.edad" class="edit-input">
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Edad</label>
+                <input type="number" [(ngModel)]="editModal.edad" class="edit-input" placeholder="Edad">
               </div>
               <div class="form-group">
-                <label>Sexo</label>
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Sexo</label>
                 <select [(ngModel)]="editModal.sexo" class="edit-input" style="width: 100%;">
                   <option value="">Seleccione</option>
                   <option value="MASCULINO">Masculino</option>
@@ -368,82 +359,103 @@ import { HttpClient } from '@angular/common/http';
                 </select>
               </div>
               <div class="form-group">
-                <label>Estado Civil</label>
-                <input type="text" [(ngModel)]="editModal.estadoCivil" class="edit-input">
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Estado Civil</label>
+                <select [(ngModel)]="editModal.estadoCivil" class="edit-input" style="width: 100%;">
+                  <option value="">Seleccione</option>
+                  <option value="SOLTERO(A)">Soltero(a)</option>
+                  <option value="CASADO(A)">Casado(a)</option>
+                  <option value="VIUDO(A)">Viudo(a)</option>
+                  <option value="DIVORCIADO(A)">Divorciado(a)</option>
+                  <option value="ACOMPAÑADO(A)">Acompañado(a)</option>
+                </select>
               </div>
             </div>
 
-            <div class="form-group" style="margin-top: 1rem;">
-              <label>Domicilio del Fallecido</label>
-              <input type="text" [(ngModel)]="editModal.domicilioFallecido" class="edit-input">
+            <div class="form-group" style="margin-bottom: 2rem;">
+              <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Domicilio del Fallecido</label>
+              <input type="text" [(ngModel)]="editModal.domicilioFallecido" class="edit-input" placeholder="Dirección completa">
             </div>
 
-            <h4 style="margin-top: 1.5rem; margin-bottom: 1rem; color: #d63384; font-size: 1rem;">Datos Médicos y Fallecimiento</h4>
-            <div class="mp-row-2">
+            <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 0.5rem;">Datos Médicos y Fallecimiento</h4>
+            <div class="mp-row-2" style="margin-bottom: 1rem;">
               <div class="form-group">
-                <label>Fecha de Fallecimiento</label>
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Fecha de Fallecimiento *</label>
                 <input type="date" [(ngModel)]="editModal.fechaFallecimiento" class="edit-input">
               </div>
               <div class="form-group">
-                <label>Hora de Fallecimiento</label>
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Hora de Fallecimiento</label>
                 <input type="time" [(ngModel)]="editModal.horaFallecimiento" class="edit-input">
               </div>
             </div>
-
-            <div class="mp-row-2" style="margin-top: 1rem;">
+            <div class="mp-row-2" style="margin-bottom: 2rem;">
               <div class="form-group">
-                <label>Causa de Muerte</label>
-                <input type="text" [(ngModel)]="editModal.causaMuerte" class="edit-input">
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Causa de la muerte</label>
+                <input type="text" [(ngModel)]="editModal.causaMuerte" class="edit-input" placeholder="Causa según dictamen médico">
               </div>
               <div class="form-group">
-                <label>Fecha de Nacimiento</label>
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Fecha de Nacimiento</label>
                 <input type="date" [(ngModel)]="editModal.fechaNacimiento" class="edit-input">
               </div>
             </div>
 
-            <h4 style="margin-top: 1.5rem; margin-bottom: 1rem; color: #d63384; font-size: 1rem;">Datos del Responsable</h4>
-            <div class="mp-row-2">
+            <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 0.5rem;">Datos del Responsable</h4>
+            <div class="mp-row-2" style="margin-bottom: 1rem;">
               <div class="form-group">
-                <label>Nombre del Responsable</label>
-                <input type="text" [(ngModel)]="editModal.nombreResponsable" class="edit-input">
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Nombre del Responsable</label>
+                <input type="text" [(ngModel)]="editModal.nombreResponsable" class="edit-input" placeholder="Responsable del entierro">
               </div>
               <div class="form-group">
-                <label>Celular</label>
-                <input type="text" [(ngModel)]="editModal.celularResponsable" class="edit-input">
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Celular</label>
+                <input type="text" [(ngModel)]="editModal.celularResponsable" class="edit-input" placeholder="Teléfono de contacto">
               </div>
             </div>
-            <div class="form-group" style="margin-top: 1rem;">
-              <label>Domicilio del Responsable</label>
-              <input type="text" [(ngModel)]="editModal.domicilioResponsable" class="edit-input">
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Domicilio del Responsable</label>
+              <input type="text" [(ngModel)]="editModal.domicilioResponsable" class="edit-input" placeholder="Dirección del responsable">
+            </div>
+            <div class="form-group" style="margin-bottom: 2rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 500; color: #475569; cursor: pointer;">
+                <input type="checkbox" [(ngModel)]="editModal.firmasAutorizadas" style="width: 18px; height: 18px; cursor: pointer;"> 
+                Confirmo que el Administrador y el Responsable han firmado la boleta física.
+              </label>
             </div>
 
-            <h4 style="margin-top: 1.5rem; margin-bottom: 1rem; color: #d63384; font-size: 1rem;">Inhumación</h4>
-            <div class="mp-row-2">
+            <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 0.5rem;">Ubicación e Inhumación</h4>
+            <div class="mp-row-2" style="margin-bottom: 1rem;">
               <div class="form-group">
-                <label>Fecha de Entierro</label>
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Fecha de Entierro</label>
                 <input type="date" [(ngModel)]="editModal.fechaEntierro" class="edit-input">
               </div>
               <div class="form-group">
-                <label>Hora de Entierro</label>
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Hora de Entierro</label>
                 <input type="time" [(ngModel)]="editModal.horaEntierro" class="edit-input">
               </div>
             </div>
-            
-            <div class="mp-row-2" style="margin-top: 1rem;">
+            <div class="mp-row-2" style="margin-bottom: 2rem;">
               <div class="form-group">
-                <label>Material Placa</label>
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Material Placa</label>
                 <input type="text" [(ngModel)]="editModal.materialPlaca" class="edit-input">
               </div>
               <div class="form-group">
-                <label>Medidas Placa</label>
+                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Medidas Placa</label>
                 <input type="text" [(ngModel)]="editModal.medidasPlaca" class="edit-input">
               </div>
             </div>
 
-            <div class="form-group" style="margin-top: 1.5rem;">
-              <label>Subir Acta / Documento PDF o Imagen</label>
-              <input type="file" (change)="onEditDifuntoFileSelected($event)" accept=".pdf,image/*" style="display: block; width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.8rem; font-family: inherit; font-size: 0.9rem;">
-              <p *ngIf="editModal.file.file" style="margin-top: 0.5rem; font-size: 0.85rem; color: #10b981;">Archivo seleccionado: {{ $any(editModal.file.file).name }}</p>
+            <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 0.5rem;">Documentación Adjunta</h4>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Boleta, DICTAMEN o Certificados (PDF/Word)</label>
+              <input type="file" (change)="onEditDifuntoFileSelectedMulti($event)" multiple accept=".pdf,.doc,.docx,image/*" style="display: block; width: 100%; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 1.5rem; background: #f8fafc; font-family: inherit; font-size: 0.9rem; text-align: center; cursor: pointer;">
+              
+              <ul style="list-style: none; padding: 0; margin-top: 1rem;" *ngIf="editModal.documentos && editModal.documentos.length">
+                <li *ngFor="let doc of editModal.documentos; let i = index" style="background: #f3f4f6; padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 0.3rem; display: flex; align-items: center; justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                    <svg style="margin-right:4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>{{ doc.nombre }}</span>
+                  </div>
+                  <span (click)="editModal.documentos.splice(i, 1)" style="color: #ef4444; font-weight: bold; cursor: pointer; padding: 0 0.5rem;">✕</span>
+                </li>
+              </ul>
             </div>
           </div>
           
@@ -457,93 +469,167 @@ import { HttpClient } from '@angular/common/http';
       <!-- MODAL VER DATOS COMPLETOS -->
       <div class="modal-overlay" *ngIf="modalVerDatos.visible" (click)="cerrarModalVerDatos()">
         <div class="modal-box modal-wide" (click)="$event.stopPropagation()">
-          <h3 class="modal-title">Expediente Completo</h3>
-          <p class="modal-subtitle" style="margin-bottom: 1.5rem;">Información detallada del {{ modalVerDatos.tipo === 'propietario' ? 'Propietario Titular' : (modalVerDatos.tipo === 'beneficiario' ? 'Beneficiario Autorizado' : 'Difunto Registrado') }}.</p>
+          <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 2px solid #fce4f0; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0; color: #d63384; font-size: 1.3rem;">Expediente Completo</h2>
+            <button class="btn-close-modal" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #999;" (click)="cerrarModalVerDatos()">✕</button>
+          </div>
           
-          <div class="profile-card" *ngIf="modalVerDatos.datos">
-            <div class="profile-header" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-              <div class="profile-avatar" style="width: 60px; height: 60px; border-radius: 50%; background: #fdf2f8; color: #d73387; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">
-                {{ modalVerDatos.datos.nombre?.charAt(0) | uppercase }}
+          <div class="modal-body detalles-body" *ngIf="modalVerDatos.datos" style="max-height: 70vh; overflow-y: auto; padding-right: 10px;">
+            <div class="detalle-item">
+              <span class="label">Nombre Completo:</span>
+              <span class="value" style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ modalVerDatos.datos.nombre }}
+                <span class="tipo-badge" [ngClass]="modalVerDatos.tipo === 'difunto' ? 'publico' : 'privado'" style="font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #bae6fd; background: #e0f2fe; color: #0369a1;">{{ modalVerDatos.tipo | uppercase }}</span>
+              </span>
+            </div>
+            <div class="detalle-item" *ngIf="modalVerDatos.datos.dui">
+              <span class="label">DUI:</span>
+              <span class="value">{{ modalVerDatos.datos.dui }}</span>
+            </div>
+
+            <div class="detalle-grid" *ngIf="modalVerDatos.tipo === 'propietario'">
+              <div class="detalle-item">
+                <span class="label">Teléfono:</span>
+                <span class="value">{{ modalVerDatos.datos.telefono || 'No registrado' }}</span>
               </div>
-              <div>
-                <h4 style="margin: 0; color: #1e293b; font-size: 1.2rem;">{{ modalVerDatos.datos.nombre }}</h4>
-                <span style="background: #f1f5f9; color: #475569; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; margin-top: 0.4rem; display: inline-block;">
-                  {{ modalVerDatos.tipo | uppercase }}
+              <div class="detalle-item">
+                <span class="label">Correo Electrónico:</span>
+                <span class="value">{{ modalVerDatos.datos.correo || 'No registrado' }}</span>
+              </div>
+            </div>
+
+            <div class="detalle-grid" *ngIf="modalVerDatos.tipo === 'difunto'">
+              <div class="detalle-item">
+                <span class="label">Fecha Fallecimiento:</span>
+                <span class="value">{{ modalVerDatos.datos.fechaFallecimiento || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Hora Fallecimiento:</span>
+                <span class="value">{{ modalVerDatos.datos.horaFallecimiento || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Fecha Entierro:</span>
+                <span class="value">{{ modalVerDatos.datos.fechaEntierro || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Hora Entierro:</span>
+                <span class="value">{{ modalVerDatos.datos.horaEntierro || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Causa de Muerte:</span>
+                <span class="value">{{ modalVerDatos.datos.causaMuerte || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Tipo de Registro:</span>
+                <span class="value">{{ modalVerDatos.datos.esPrivado ? 'PRIVADO' : 'PÚBLICO' }}</span>
+              </div>
+            </div>
+
+            <hr class="divider" *ngIf="modalVerDatos.tipo === 'difunto'">
+            <h3 *ngIf="modalVerDatos.tipo === 'difunto'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Datos Personales</h3>
+            <div class="detalle-grid" *ngIf="modalVerDatos.tipo === 'difunto'">
+              <div class="detalle-item">
+                <span class="label">Fecha Nacimiento:</span>
+                <span class="value">{{ modalVerDatos.datos.fechaNacimiento || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Edad:</span>
+                <span class="value">{{ modalVerDatos.datos.edad ? modalVerDatos.datos.edad + ' años' : 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Sexo:</span>
+                <span class="value">{{ modalVerDatos.datos.sexo || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Estado Civil:</span>
+                <span class="value">{{ modalVerDatos.datos.estadoCivil || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item" style="grid-column: span 2;">
+                <span class="label">Domicilio del Fallecido:</span>
+                <span class="value">{{ modalVerDatos.datos.domicilioFallecido || 'N/A' }}</span>
+              </div>
+            </div>
+
+            <hr class="divider" *ngIf="modalVerDatos.tipo === 'difunto'">
+            <h3 *ngIf="modalVerDatos.tipo === 'difunto'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Responsable</h3>
+            <div class="detalle-grid" *ngIf="modalVerDatos.tipo === 'difunto'">
+              <div class="detalle-item">
+                <span class="label">Nombre Responsable:</span>
+                <span class="value">{{ modalVerDatos.datos.nombreResponsable || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Celular:</span>
+                <span class="value">{{ modalVerDatos.datos.celularResponsable || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item" style="grid-column: span 2;">
+                <span class="label">Domicilio Responsable:</span>
+                <span class="value">{{ modalVerDatos.datos.domicilioResponsable || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item" style="grid-column: span 2;">
+                <span class="label">Firmas Autorizadas:</span>
+                <span class="value">{{ modalVerDatos.datos.firmasAutorizadas ? 'Sí' : 'No' }}</span>
+              </div>
+            </div>
+            
+            <hr class="divider" *ngIf="modalVerDatos.tipo === 'difunto'">
+            <h3 *ngIf="modalVerDatos.tipo === 'difunto'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Placa y Material</h3>
+            <div class="detalle-grid" *ngIf="modalVerDatos.tipo === 'difunto'">
+              <div class="detalle-item">
+                <span class="label">Material Placa:</span>
+                <span class="value">{{ modalVerDatos.datos.materialPlaca || 'N/A' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Medidas Placa:</span>
+                <span class="value">{{ modalVerDatos.datos.medidasPlaca || 'N/A' }}</span>
+              </div>
+            </div>
+
+            <hr class="divider" *ngIf="modalVerDatos.documentosCargados && modalVerDatos.documentosCargados.length > 0">
+            <div class="detalle-item" *ngIf="modalVerDatos.documentosCargados && modalVerDatos.documentosCargados.length > 0">
+              <span class="label">Documentos Adjuntos:</span>
+              <ul class="value-list" style="list-style: none; padding: 0; margin-top: 0.5rem;">
+                <li *ngFor="let doc of modalVerDatos.documentosCargados" style="background: #f3f4f6; padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 0.3rem; display: flex; align-items: center; justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                    <svg style="margin-right:4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>{{ doc.nombre }}</span>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <ng-container *ngIf="doc.base64Archivo">
+                      <a href="javascript:void(0)" (click)="verDocumentoBase64(doc)" style="color: #3b82f6; text-decoration: underline; cursor: pointer;">Ver</a>
+                      <a href="javascript:void(0)" (click)="descargarDocumentoBase64(doc)" style="color: #10b981; text-decoration: underline; cursor: pointer;">Descargar</a>
+                      <a href="javascript:void(0)" *ngIf="isAdmin" (click)="eliminarDocumento(doc.id)" style="color: #ef4444; text-decoration: underline; cursor: pointer;" title="Eliminar documento">Eliminar</a>
+                    </ng-container>
+                    <ng-container *ngIf="doc.data">
+                      <a href="javascript:void(0)" (click)="descargarDocumentoPropio(doc)" style="color: #10b981; text-decoration: underline; cursor: pointer;">Descargar / Ver</a>
+                    </ng-container>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <hr class="divider" *ngIf="modalVerDatos.tipo === 'propietario' || modalVerDatos.tipo === 'difunto'">
+
+            <div class="detalle-item" *ngIf="modalVerDatos.tipo === 'propietario' || modalVerDatos.tipo === 'difunto'">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="label" style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">Historial de Pagos
+                  <span class="status-badge" [class.success]="estadoPagoModalVer === 'Al Día'" [class.error]="estadoPagoModalVer !== 'Al Día'">
+                    {{ estadoPagoModalVer }}
+                  </span>
                 </span>
               </div>
-            </div>
-
-            <div class="profile-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: #f8fafc; padding: 1.5rem; border-radius: 8px;">
-              <div class="detail-item">
-                <span style="display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">DUI</span>
-                <strong style="color: #334155; font-size: 0.95rem;">{{ modalVerDatos.datos.dui || 'No registrado' }}</strong>
-              </div>
-              <div class="detail-item" *ngIf="modalVerDatos.tipo === 'propietario'">
-                <span style="display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Teléfono</span>
-                <strong style="color: #334155; font-size: 0.95rem;">{{ modalVerDatos.datos.telefono || 'No registrado' }}</strong>
-              </div>
-              <div class="detail-item" *ngIf="modalVerDatos.tipo === 'propietario'">
-                <span style="display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Correo Electrónico</span>
-                <strong style="color: #334155; font-size: 0.95rem;">{{ modalVerDatos.datos.correo || 'No registrado' }}</strong>
-              </div>
-              <div class="detail-item" *ngIf="modalVerDatos.tipo === 'difunto'">
-                <span style="display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Fecha de Nacimiento</span>
-                <strong style="color: #334155; font-size: 0.95rem;">{{ modalVerDatos.datos.fechaNacimiento || 'No registrada' }}</strong>
-              </div>
-              <div class="detail-item" *ngIf="modalVerDatos.tipo === 'difunto'">
-                <span style="display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Fecha de Fallecimiento</span>
-                <strong style="color: #334155; font-size: 0.95rem;">{{ modalVerDatos.datos.fechaFallecimiento || 'No registrada' }}</strong>
-              </div>
-              <div class="detail-item" *ngIf="modalVerDatos.tipo === 'difunto'">
-                <span style="display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Fecha de Entierro</span>
-                <strong style="color: #334155; font-size: 0.95rem;">{{ modalVerDatos.datos.fechaEntierro || 'No registrada' }}</strong>
-              </div>
-              <div class="detail-item" *ngIf="modalVerDatos.tipo === 'difunto'">
-                <span style="display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Tipo de Registro</span>
-                <strong style="color: #334155; font-size: 0.95rem;">{{ modalVerDatos.datos.esPrivado ? 'PRIVADO' : 'PÚBLICO' }}</strong>
-              </div>
-            </div>
-
-            <div class="profile-docs" *ngIf="(modalVerDatos.tipo === 'propietario' || modalVerDatos.tipo === 'difunto') && modalVerDatos.datos.documentosJson" style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
-              <span style="display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;">Anotaciones</span>
-              <p style="background: #fff; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 8px; color: #334155; font-size: 0.9rem; margin: 0; white-space: pre-wrap;">{{ modalVerDatos.datos.documentosJson }}</p>
-            </div>
-
-            <div class="profile-docs" *ngIf="modalVerDatos.documentosCargados && modalVerDatos.documentosCargados.length > 0" style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
-              <span style="display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;">Documentos Adjuntos</span>
-              <div *ngFor="let doc of modalVerDatos.documentosCargados" style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #e2e8f0; padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <span style="font-size: 1.2rem;">📄</span>
-                  <span style="font-size: 0.9rem; color: #334155; font-weight: 500;">{{ doc.nombre }}</span>
-                </div>
-                <div style="display: flex; gap: 0.5rem;">
-                  <button class="btn-xs btn-outline-pink" (click)="verDocumentoBase64(doc)">Ver</button>
-                  <button class="btn-xs btn-outline-pink" (click)="descargarDocumentoBase64(doc)">Descargar</button>
-                  <button *ngIf="isAdmin" class="btn-xs btn-outline-red" (click)="eliminarDocumento(doc.id)" title="Eliminar documento">X</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- HISTORIAL DE PAGOS -->
-            <div class="profile-docs" *ngIf="modalVerDatos.tipo === 'propietario' || modalVerDatos.tipo === 'difunto'" style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Historial de Pagos</span>
-                <button class="btn-xs btn-pay" style="background: #10b981; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer;" (click)="registrarPagoModal()">+ Nuevo Pago</button>
-              </div>
               
-              <div *ngIf="!modalVerDatos.pagosCargados || modalVerDatos.pagosCargados.length === 0" style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 1rem 0;">
+              <div *ngIf="!modalVerDatos.pagosCargados || modalVerDatos.pagosCargados.length === 0" style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 1rem 0; background: #f9fafb; border-radius: 8px;">
                 No hay pagos registrados
               </div>
 
-              <div *ngFor="let pago of modalVerDatos.pagosCargados" style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.9rem;">
-                <div>
-                  <strong style="color: #334155;">{{ pago.concepto }}</strong>
-                  <span style="color: #64748b; margin-left: 0.5rem;">{{ pago.fecha }}</span>
+              <div *ngFor="let pago of modalVerDatos.pagosCargados" style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #e5e7eb; padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                  <strong style="color: #374151; font-size: 0.95rem;">{{ pago.concepto }}</strong>
+                  <span style="color: #6b7280; font-size: 0.8rem;">{{ pago.fecha }}</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                  <span style="font-family: monospace; font-weight: bold; color: #0f172a;">$ {{ pago.monto }}</span>
-                  <span style="padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: bold;"
-                        [ngStyle]="{'background': pago.estado === 'PAGADO' ? '#dcfce7' : '#fee2e2', 'color': pago.estado === 'PAGADO' ? '#16a34a' : '#ef4444'}">
+                  <span style="font-family: monospace; font-weight: bold; color: #111827; font-size: 1.1rem;">$ {{ pago.monto }}</span>
+                  <span class="status-badge" [ngStyle]="{'background': pago.estado === 'PAGADO' ? '#dcfce7' : '#fee2e2', 'color': pago.estado === 'PAGADO' ? '#16a34a' : '#ef4444'}" style="padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">
                     {{ pago.estado }}
                   </span>
                 </div>
@@ -551,13 +637,34 @@ import { HttpClient } from '@angular/common/http';
             </div>
 
           </div>
-
-          <div class="modal-actions" style="margin-top: 2rem;">
-            <button class="btn-modal btn-cancel" style="width: 100%;" (click)="cerrarModalVerDatos()">Cerrar Expediente</button>
+          <div class="modal-actions" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f3e6ef; display: flex; justify-content: flex-end;">
+            <button class="btn-modal btn-cancel" (click)="cerrarModalVerDatos()">Cerrar</button>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- MODAL PAGO NUEVO -->
+      <div class="modal-overlay" *ngIf="modalPago.visible" (click)="cerrarModalPago()">
+        <div class="modal-box" (click)="$event.stopPropagation()">
+          <h3 class="modal-title">Registrar Nuevo Pago</h3>
+          <p class="modal-subtitle" style="margin-bottom: 1.5rem;">Ingrese los detalles del pago realizado.</p>
+          
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label>Monto a Pagar ($) <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="modalPago.monto" class="edit-input" placeholder="0.00" min="0.01" step="0.01">
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label>Concepto / Descripción <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="modalPago.concepto" class="edit-input" placeholder="Ej. Mantenimiento Anual 2026">
+          </div>
+
+          <div class="modal-actions" style="margin-top: 1rem;">
+            <button class="btn-modal btn-cancel" (click)="cerrarModalPago()">Cancelar</button>
+            <button class="btn-modal btn-confirm" (click)="confirmarRegistroPago()" [disabled]="!modalPago.monto || !modalPago.concepto">Registrar Pago</button>
+          </div>
+        </div>
+      </div>
   `,
   styleUrls: ['./detalle-cementerio.component.css']
 })
@@ -577,6 +684,11 @@ export class DetalleCementerioComponent implements OnInit {
 
   criptasPrivadas: any[] = [];
   criptasPrivadasFiltradas: any[] = [];
+  criptasPaginadas: any[] = [];
+  paginaActual: number = 1;
+  lotesPorPagina: number = 5;
+  selectedLotePrivadoId: number | null = null;
+  selectedCriptaPrivadaObj: any = null;
 
   // Modal propietario
   modalPropietario = { visible: false };
@@ -622,12 +734,12 @@ export class DetalleCementerioComponent implements OnInit {
     nombreResponsable: '',
     domicilioResponsable: '',
     celularResponsable: '',
+    firmasAutorizadas: false,
     horaFallecimiento: '',
     horaEntierro: '',
     materialPlaca: '',
     medidasPlaca: '',
-    documentosJson: '',
-    file: { file: null as File | null, base64: '' },
+    documentos: [] as any[],
     difuntoObj: null as any
   };
 
@@ -638,6 +750,19 @@ export class DetalleCementerioComponent implements OnInit {
     datos: null as any,
     documentosCargados: [] as any[],
     pagosCargados: [] as any[]
+  };
+
+  get estadoPagoModalVer(): string {
+    if (!this.modalVerDatos.pagosCargados || this.modalVerDatos.pagosCargados.length === 0) return 'Sin Pagos';
+    const tienePendiente = this.modalVerDatos.pagosCargados.some(p => p.estado === 'PENDIENTE');
+    return tienePendiente ? 'Pendiente' : 'Al Día';
+  }
+
+  // Modal para pagos
+  modalPago = {
+    visible: false,
+    monto: null as number | null,
+    concepto: ''
   };
 
   isAdmin = false;
@@ -690,8 +815,12 @@ export class DetalleCementerioComponent implements OnInit {
     this.espaciosFiltrados = [];
     this.criptasPrivadas = [];
     this.criptasPrivadasFiltradas = [];
+    this.criptasPaginadas = [];
+    this.selectedLotePrivadoId = null;
+    this.selectedCriptaPrivadaObj = null;
     this.criptasPublicas = [];
     this.selectedLotePublicoId = null;
+    this.paginaActual = 1;
     if (sec.parcelas && sec.parcelas.length > 0) {
       this.seleccionarParcela(sec.parcelas[0]);
     }
@@ -700,6 +829,9 @@ export class DetalleCementerioComponent implements OnInit {
   seleccionarParcela(par: any) {
     this.parcelaSeleccionada = par;
     this.terminoBusqueda = '';
+    this.selectedLotePrivadoId = null;
+    this.selectedCriptaPrivadaObj = null;
+    this.paginaActual = 1;
     if (this.seccionSeleccionada && this.seccionSeleccionada.nombre === 'PRIVADO') {
       this.agruparCriptas();
     } else {
@@ -768,6 +900,16 @@ export class DetalleCementerioComponent implements OnInit {
     const parcela = this.parcelasPrivadas.find(p => p.id == parcelaId);
     if (parcela) {
       this.lotesDisponibles = parcela.criptas || [];
+    }
+  }
+
+  abrirModalPropietarioDirecto(criptaId: number) {
+    this.abrirModalPropietario();
+    // Autoseleccionar la parcela y cripta actual
+    if (this.parcelaSeleccionada) {
+      this.propParcelaId = this.parcelaSeleccionada.id;
+      this.onPropParcelaIdChange(this.propParcelaId!);
+      this.propCriptaId = criptaId;
     }
   }
 
@@ -937,24 +1079,78 @@ export class DetalleCementerioComponent implements OnInit {
       if (a.fila !== b.fila) return a.fila - b.fila;
       return a.columna - b.columna;
     });
+
     this.filtrarCriptas();
   }
 
   filtrarCriptas() {
-    if (!this.terminoBusqueda.trim()) {
-      this.criptasPrivadasFiltradas = [...this.criptasPrivadas];
-      return;
+    let filtradas = [...this.criptasPrivadas];
+
+    if (this.terminoBusqueda.trim()) {
+      const termino = this.terminoBusqueda.toLowerCase().trim();
+      filtradas = filtradas.filter(cr => {
+        const prop = (cr.propietario || '').toLowerCase();
+        const propDui = (cr.clienteObj?.dui || '').toLowerCase();
+        const algunDifunto = cr.espacios.some((e: any) => 
+          (e.difunto || '').toLowerCase().includes(termino) ||
+          (e.difuntoObj?.dui || '').toLowerCase().includes(termino)
+        );
+        return prop.includes(termino) || propDui.includes(termino) || algunDifunto;
+      });
     }
-    const termino = this.terminoBusqueda.toLowerCase().trim();
-    this.criptasPrivadasFiltradas = this.criptasPrivadas.filter(cr => {
-      const prop = (cr.propietario || '').toLowerCase();
-      const algunDifunto = cr.espacios.some((e: any) => (e.difunto || '').toLowerCase().includes(termino));
-      return prop.includes(termino) || algunDifunto;
-    });
+
+    if (this.selectedLotePrivadoId) {
+      filtradas = filtradas.filter(cr => cr.id == this.selectedLotePrivadoId);
+      this.paginaActual = 1;
+    }
+
+    this.criptasPrivadasFiltradas = filtradas;
+    this.actualizarPaginacion();
   }
 
-  // Metodo aplanarYOrdenarEspacios se reemplaza por actualizarLotePublico,
-  // pero lo eliminamos de aquí
+  actualizarPaginacion() {
+    const inicio = (this.paginaActual - 1) * this.lotesPorPagina;
+    const fin = inicio + this.lotesPorPagina;
+    this.criptasPaginadas = this.criptasPrivadasFiltradas.slice(inicio, fin);
+  }
+
+  get totalPaginasPrivado(): number {
+    return Math.ceil(this.criptasPrivadasFiltradas.length / this.lotesPorPagina) || 1;
+  }
+
+  cambiarPagina(delta: number) {
+    const nuevaPagina = this.paginaActual + delta;
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPaginasPrivado) {
+      this.paginaActual = nuevaPagina;
+      this.actualizarPaginacion();
+    }
+  }
+
+  toggleLoteExpanded(lote: any) {
+    lote.expanded = !lote.expanded;
+  }
+
+  actualizarLotePrivado() {
+    this.filtrarCriptas();
+  }
+
+  onSearchInput(event: any) {
+    let val = event.target.value;
+    if (/^\d/.test(val)) {
+      let numStr = val.replace(/\D/g, '');
+      if (numStr.length > 9) numStr = numStr.substring(0, 9);
+      if (numStr.length > 8) {
+        val = numStr.substring(0, 8) + '-' + numStr.substring(8);
+      } else {
+        val = numStr;
+      }
+      this.terminoBusqueda = val;
+      event.target.value = val;
+    } else {
+      this.terminoBusqueda = val;
+    }
+    this.filtrarEspacios();
+  }
 
   filtrarEspacios() {
     if (this.seccionSeleccionada && this.seccionSeleccionada.nombre === 'PRIVADO') {
@@ -965,8 +1161,15 @@ export class DetalleCementerioComponent implements OnInit {
     }
     const termino = this.terminoBusqueda.toLowerCase().trim();
     this.espaciosFiltrados = this.espaciosAplanados.filter(item => {
-      return (item.difunto || '').toLowerCase().includes(termino) || (item.estado || '').toLowerCase().includes(termino);
+      return (item.difunto || '').toLowerCase().includes(termino) || 
+             (item.estado || '').toLowerCase().includes(termino) ||
+             (item.difuntoObj?.dui || '').toLowerCase().includes(termino);
     });
+  }
+
+  getEspaciosLibres(cr: any): number {
+    if (!cr || !cr.espacios) return 0;
+    return cr.espacios.filter((e: any) => (e.estado || 'DISPONIBLE') === 'DISPONIBLE').length;
   }
 
   toggleDetalleCripta(cr: any) {
@@ -1009,9 +1212,13 @@ export class DetalleCementerioComponent implements OnInit {
           this.modalVerDatos.pagosCargados = pagos;
         });
       } else if (tipo === 'difunto') {
-        this.cementerioService.getDocumentosPorDifunto(entidadId).subscribe(docs => {
-          this.modalVerDatos.documentosCargados = docs;
-        });
+        let docs = [];
+        if (datos.documentosJson) {
+          try {
+            docs = JSON.parse(datos.documentosJson);
+          } catch(e) {}
+        }
+        this.modalVerDatos.documentosCargados = docs;
         this.http.get<any[]>(`${environment.apiUrl}/pagos/difunto/${entidadId}`).subscribe(pagos => {
           this.modalVerDatos.pagosCargados = pagos;
         });
@@ -1020,19 +1227,30 @@ export class DetalleCementerioComponent implements OnInit {
   }
 
   registrarPagoModal() {
-    const montoStr = prompt('Ingrese el monto del pago ($):');
-    if (!montoStr) return;
-    const monto = parseFloat(montoStr);
-    if (isNaN(monto) || monto <= 0) {
-      alert('Monto inválido.');
+    this.modalPago = {
+      visible: true,
+      monto: null,
+      concepto: ''
+    };
+  }
+
+  cerrarModalPago() {
+    this.modalPago.visible = false;
+  }
+
+  confirmarRegistroPago() {
+    if (!this.modalPago.monto || this.modalPago.monto <= 0) {
+      this.mostrarModal('error', 'Monto Inválido', 'Debe ingresar un monto válido mayor a 0.');
       return;
     }
-    const concepto = prompt('Ingrese el concepto (Ej. Mantenimiento Anual):');
-    if (!concepto) return;
+    if (!this.modalPago.concepto || this.modalPago.concepto.trim() === '') {
+      this.mostrarModal('error', 'Concepto Inválido', 'Debe ingresar el concepto del pago.');
+      return;
+    }
 
     const payload: any = {
-      monto: monto,
-      concepto: concepto,
+      monto: this.modalPago.monto,
+      concepto: this.modalPago.concepto,
       estado: 'PAGADO'
     };
 
@@ -1045,10 +1263,12 @@ export class DetalleCementerioComponent implements OnInit {
     this.http.post<any>(`${environment.apiUrl}/pagos`, payload).subscribe({
       next: (res) => {
         this.modalVerDatos.pagosCargados.push(res);
+        this.cerrarModalPago();
         this.mostrarModal('exito', 'Pago Registrado', 'El pago se ha registrado correctamente.');
       },
       error: (err) => {
         console.error(err);
+        this.cerrarModalPago();
         this.mostrarModal('error', 'Error', 'No se pudo registrar el pago.');
       }
     });
@@ -1080,24 +1300,48 @@ export class DetalleCementerioComponent implements OnInit {
     document.body.removeChild(a);
   }
 
+  descargarDocumentoPropio(doc: any) {
+    if (!doc.data) return;
+    let mimeType = 'application/octet-stream';
+    if (doc.nombre.toLowerCase().endsWith('.pdf')) mimeType = 'application/pdf';
+    else if (doc.nombre.toLowerCase().endsWith('.png')) mimeType = 'image/png';
+    else if (doc.nombre.toLowerCase().endsWith('.jpg') || doc.nombre.toLowerCase().endsWith('.jpeg')) mimeType = 'image/jpeg';
+    else if (doc.nombre.toLowerCase().endsWith('.doc') || doc.nombre.toLowerCase().endsWith('.docx')) mimeType = 'application/msword';
+
+    const src = `data:${mimeType};base64,${doc.data}`;
+    const link = document.createElement("a");
+    link.href = src;
+    link.download = doc.nombre;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   eliminarDocumento(docId: number) {
-    if (!confirm('¿Está seguro de que desea eliminar este documento? Esta acción no se puede deshacer.')) return;
-    
-    this.cementerioService.eliminarDocumento(docId).subscribe({
-      next: () => {
-        // Removerlo de la lista actual del modal
-        this.modalVerDatos.documentosCargados = this.modalVerDatos.documentosCargados.filter(d => d.id !== docId);
-        this.mostrarModal('exito', 'Documento Eliminado', 'El documento se ha eliminado correctamente.');
-      },
-      error: (err) => {
-        console.error('Error al eliminar el documento', err);
-        this.mostrarModal('error', 'Error', 'Ocurrió un error al intentar eliminar el documento.');
-      }
+    this.mostrarModal('confirmar', 'Eliminar Documento', '¿Está seguro de que desea eliminar este documento? Esta acción no se puede deshacer.', () => {
+      this.cementerioService.eliminarDocumento(docId).subscribe({
+        next: () => {
+          // Removerlo de la lista actual del modal
+          this.modalVerDatos.documentosCargados = this.modalVerDatos.documentosCargados.filter(d => d.id !== docId);
+          this.mostrarModal('exito', 'Documento Eliminado', 'El documento se ha eliminado correctamente.');
+        },
+        error: (err) => {
+          console.error('Error al eliminar el documento', err);
+          this.mostrarModal('error', 'Error', 'Ocurrió un error al intentar eliminar el documento.');
+        }
+      });
     });
   }
 
   // --- Editar Espacio ---
   editarEspacio(esp: any) {
+    let documentosArray = [];
+    if (esp.difuntoObj?.documentosJson) {
+      try {
+        documentosArray = JSON.parse(esp.difuntoObj.documentosJson);
+      } catch(e) {}
+    }
+
     this.editModal = {
       visible: true,
       espacioId: esp.id,
@@ -1114,23 +1358,28 @@ export class DetalleCementerioComponent implements OnInit {
       nombreResponsable: esp.difuntoObj?.nombreResponsable || '',
       domicilioResponsable: esp.difuntoObj?.domicilioResponsable || '',
       celularResponsable: esp.difuntoObj?.celularResponsable || '',
+      firmasAutorizadas: esp.difuntoObj?.firmasAutorizadas || false,
       horaFallecimiento: esp.difuntoObj?.horaFallecimiento || '',
       horaEntierro: esp.difuntoObj?.horaEntierro || '',
       materialPlaca: esp.difuntoObj?.materialPlaca || '',
       medidasPlaca: esp.difuntoObj?.medidasPlaca || '',
-      documentosJson: esp.difuntoObj?.documentosJson || '',
-      file: { file: null, base64: '' },
+      documentos: documentosArray,
       difuntoObj: esp.difuntoObj
     };
   }
   cancelarEditar() { this.editModal.visible = false; }
 
-  onEditDifuntoFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
+  onEditDifuntoFileSelectedMulti(event: any) {
+    const files: FileList = event.target.files;
+    if (!files) return;
+    for (let i = 0; i < files.length; i++) {
+      const file = files.item(i);
+      if (!file) continue;
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.editModal.file = { file, base64: e.target.result };
+        const base64 = e.target.result.split(',')[1];
+        if (!this.editModal.documentos) this.editModal.documentos = [];
+        this.editModal.documentos.push({ nombre: file.name, data: base64 });
       };
       reader.readAsDataURL(file);
     }
@@ -1151,22 +1400,16 @@ export class DetalleCementerioComponent implements OnInit {
       nombreResponsable: this.editModal.nombreResponsable || null,
       domicilioResponsable: this.editModal.domicilioResponsable || null,
       celularResponsable: this.editModal.celularResponsable || null,
+      firmasAutorizadas: this.editModal.firmasAutorizadas || false,
       horaFallecimiento: this.editModal.horaFallecimiento ? this.editModal.horaFallecimiento + ":00" : null,
       horaEntierro: this.editModal.horaEntierro ? this.editModal.horaEntierro + ":00" : null,
       materialPlaca: this.editModal.materialPlaca || null,
       medidasPlaca: this.editModal.medidasPlaca || null,
-      documentosJson: this.editModal.documentosJson || null
+      documentosJson: (this.editModal.documentos && this.editModal.documentos.length > 0) ? JSON.stringify(this.editModal.documentos) : null
     };
     this.cementerioService.editarEspacio(this.editModal.espacioId!, payload).subscribe({
       next: (res: any) => {
-        if (this.editModal.file.file && res && res.id) {
-          this.cementerioService.subirDocumento(this.editModal.file.file.name, this.editModal.file.base64, undefined, res.id).subscribe({
-            next: () => this.finalizarEditarEspacio(),
-            error: () => this.finalizarEditarEspacio()
-          });
-        } else {
-          this.finalizarEditarEspacio();
-        }
+        this.finalizarEditarEspacio();
       },
       error: (err) => {
         if (err.error?.error === 'DUI_DUPLICADO' || err.error?.message === 'DUI_DUPLICADO' || (err.error && typeof err.error === 'string' && err.error.includes('DUI_DUPLICADO'))) {
