@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-gestion-usuarios',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="container">
       <div class="header-section">
@@ -34,7 +35,6 @@ import { Router } from '@angular/router';
           <table>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Usuario / Correo</th>
                 <th>Rol</th>
                 <th>Sede Asignada</th>
@@ -44,7 +44,6 @@ import { Router } from '@angular/router';
             </thead>
             <tbody>
               <tr *ngFor="let u of usuarios">
-                <td class="id-cell">#{{ u.idUsuario }}</td>
                 <td class="user-info">
                   <div class="avatar">{{ u.correo.charAt(0).toUpperCase() }}</div>
                   <span>{{ u.correo }}</span>
@@ -79,6 +78,73 @@ import { Router } from '@angular/router';
           <p>No se encontraron usuarios registrados.</p>
         </div>
       </div>
+
+      <!-- Modal para editar usuario -->
+      <div class="modal-overlay" *ngIf="showEditModal">
+        <div class="modal-content">
+          <h3>Editar Usuario</h3>
+          <div class="form-group">
+            <label>Correo Electrónico</label>
+            <input type="email" [(ngModel)]="nuevoCorreo" class="modal-input" placeholder="Nuevo correo">
+          </div>
+          <div class="form-group">
+            <label>Rol</label>
+            <select [(ngModel)]="nuevoRol" class="modal-input">
+              <option value="ADMIN">ADMIN</option>
+              <option value="INFORMATICA">INFORMATICA</option>
+              <option value="OPERADOR">OPERADOR</option>
+              <option value="VISITANTE">VISITANTE</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+            <button class="btn-confirm" (click)="confirmarEdicion()">Guardar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal para restablecer contraseña -->
+      <div class="modal-overlay" *ngIf="showPasswordModal">
+        <div class="modal-content">
+          <h3>Restablecer Contraseña</h3>
+          <p>Ingrese la nueva contraseña para <strong>{{ usuarioActual?.correo }}</strong></p>
+          <div class="form-group">
+            <input type="password" [(ngModel)]="nuevaClave" class="modal-input" placeholder="Nueva contraseña">
+          </div>
+          <div class="modal-actions">
+            <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+            <button class="btn-confirm" (click)="confirmarPassword()">Actualizar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal para confirmar eliminación -->
+      <div class="modal-overlay" *ngIf="showDeleteModal">
+        <div class="modal-content">
+          <h3>Confirmar Eliminación</h3>
+          <p>¿Está completamente seguro de eliminar este usuario? Esta acción no se puede deshacer.</p>
+          <div class="modal-actions">
+            <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+            <button class="btn-delete" (click)="confirmarEliminacion()">Eliminar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal para Mensajes de Alerta -->
+      <div class="modal-overlay" *ngIf="showAlertModal">
+        <div class="modal-content text-center">
+          <div class="alert-icon" [ngClass]="alertType">
+            <svg *ngIf="alertType === 'success'" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <svg *ngIf="alertType === 'error'" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+          </div>
+          <h3>{{ alertTitle }}</h3>
+          <p>{{ alertMessage }}</p>
+          <div class="modal-actions" style="justify-content: center; margin-top: 1.5rem;">
+            <button class="btn-confirm" (click)="cerrarAlertModal()">Aceptar</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   `,
   styles: [`
@@ -168,6 +234,61 @@ import { Router } from '@angular/router';
 
     .empty-state { padding: 4rem; text-align: center; color: #94a3b8; }
 
+    /* Estilos de Modal */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
+      z-index: 1000; animation: fadeIn 0.3s ease;
+    }
+    .modal-content {
+      background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    .modal-content h3 { margin-top: 0; color: #1e293b; margin-bottom: 0.5rem; }
+    .modal-content p { color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .form-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #334155;
+    }
+    .modal-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+    }
+    .modal-input:focus { border-color: #d73387; box-shadow: 0 0 0 3px rgba(215,51,135,0.1); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; }
+    .btn-cancel {
+      background: #f1f5f9; color: #475569; border: none; padding: 0.8rem 1.2rem;
+      border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    .btn-cancel:hover { background: #e2e8f0; }
+    .btn-confirm {
+      background: #0ea5e9; color: white; border: none; padding: 0.8rem 1.2rem;
+      border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    .btn-confirm:hover { background: #0284c7; }
+    .btn-delete {
+      background: #ef4444; color: white; border: none; padding: 0.8rem 1.2rem;
+      border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    .btn-delete:hover { background: #dc2626; }
+
+    .text-center { text-align: center; }
+    .alert-icon { display: flex; justify-content: center; align-items: center; width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 1rem; }
+    .alert-icon.success { background: #dcfce7; color: #16a34a; }
+    .alert-icon.error { background: #fee2e2; color: #ef4444; }
+
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     /* RESPONSIVE MÓVIL */
@@ -185,6 +306,21 @@ import { Router } from '@angular/router';
 })
 export class GestionUsuariosComponent implements OnInit {
   usuarios: Usuario[] = [];
+  
+  showEditModal = false;
+  showPasswordModal = false;
+  showDeleteModal = false;
+  
+  usuarioActual: Usuario | null = null;
+  nuevoCorreo = '';
+  nuevoRol = '';
+  nuevaClave = '';
+  idEliminar: number | null = null;
+
+  showAlertModal = false;
+  alertTitle = '';
+  alertMessage = '';
+  alertType: 'success' | 'error' = 'success';
 
   constructor(
     private usuarioService: UsuarioService,
@@ -206,33 +342,98 @@ export class GestionUsuariosComponent implements OnInit {
     this.router.navigate(['/dashboard/nuevo-usuario']);
   }
 
+  cerrarModales() {
+    this.showEditModal = false;
+    this.showDeleteModal = false;
+    this.showPasswordModal = false;
+    this.usuarioActual = null;
+    this.nuevoCorreo = '';
+    this.nuevoRol = '';
+    this.nuevaClave = '';
+    this.idEliminar = null;
+  }
+
+  mostrarAlerta(title: string, message: string, type: 'success' | 'error') {
+    this.alertTitle = title;
+    this.alertMessage = message;
+    this.alertType = type;
+    this.showAlertModal = true;
+  }
+
+  cerrarAlertModal() {
+    this.showAlertModal = false;
+  }
+
   editar(u: Usuario) {
-    const nuevoCorreo = prompt('Editar correo electrónico de ' + u.correo, u.correo);
-    if (nuevoCorreo && nuevoCorreo !== u.correo) {
-      this.usuarioService.actualizarUsuario(u.idUsuario!, { ...u, correo: nuevoCorreo }).subscribe({
-        next: () => this.cargarUsuarios(),
-        error: (err) => alert('Error al actualizar: ' + err.error?.message)
+    this.usuarioActual = u;
+    this.nuevoCorreo = u.correo;
+    this.nuevoRol = u.rol;
+    this.showEditModal = true;
+  }
+
+  confirmarEdicion() {
+    if (this.usuarioActual && this.nuevoCorreo) {
+      const payload: Usuario = {
+        idUsuario: this.usuarioActual.idUsuario,
+        correo: this.nuevoCorreo,
+        rol: this.nuevoRol,
+        cementerio: this.usuarioActual.cementerio,
+        esTemporal: this.usuarioActual.esTemporal
+      };
+      this.usuarioService.actualizarUsuario(this.usuarioActual.idUsuario!, payload).subscribe({
+        next: () => {
+          this.cargarUsuarios();
+          this.cerrarModales();
+          this.mostrarAlerta('¡Éxito!', 'Usuario actualizado exitosamente.', 'success');
+        },
+        error: (err) => {
+          console.error('Error completo al actualizar:', err);
+          this.mostrarAlerta('Error', 'No se pudo actualizar el usuario: ' + (err.error?.message || err.message || 'Error desconocido'), 'error');
+        }
       });
+    } else {
+      this.cerrarModales();
     }
   }
 
   resetearPassword(u: Usuario) {
-    const nuevaClave = prompt('Ingrese la nueva contraseña temporal para ' + u.correo);
-    if (nuevaClave) {
-      this.usuarioService.actualizarPassword(u.idUsuario!, nuevaClave).subscribe({
-        next: () => alert('Contraseña actualizada correctamente.'),
-        error: (err) => alert('Error al cambiar contraseña: ' + err.error?.message)
+    this.usuarioActual = u;
+    this.nuevaClave = '';
+    this.showPasswordModal = true;
+  }
+
+  confirmarPassword() {
+    if (this.usuarioActual && this.nuevaClave) {
+      this.usuarioService.actualizarPassword(this.usuarioActual.idUsuario!, this.nuevaClave, true).subscribe({
+        next: () => {
+          this.cerrarModales();
+          this.mostrarAlerta('¡Éxito!', 'Contraseña actualizada exitosamente.', 'success');
+        },
+        error: (err) => {
+          console.error('Error al actualizar contraseña:', err);
+          this.mostrarAlerta('Error', 'No se pudo actualizar la contraseña: ' + (err.error?.message || err.message), 'error');
+        }
       });
     }
   }
 
   eliminar(id: number) {
-    if (confirm('¿Está completamente seguro de eliminar este usuario? Esta acción no se puede deshacer.')) {
-      this.usuarioService.eliminarUsuario(id).subscribe({
+    this.idEliminar = id;
+    this.showDeleteModal = true;
+  }
+
+  confirmarEliminacion() {
+    if (this.idEliminar !== null) {
+      this.usuarioService.eliminarUsuario(this.idEliminar).subscribe({
         next: () => {
-          this.usuarios = this.usuarios.filter(u => u.idUsuario !== id);
+          this.usuarios = this.usuarios.filter(u => u.idUsuario !== this.idEliminar);
+          this.cerrarModales();
+          this.mostrarAlerta('¡Eliminado!', 'El usuario ha sido eliminado.', 'success');
         },
-        error: (err) => alert('Error al eliminar: ' + err.error?.message)
+        error: (err) => {
+          console.error('Error completo al eliminar:', err);
+          this.mostrarAlerta('Error', 'No se pudo eliminar el usuario: ' + (err.error?.message || err.message || 'Error desconocido'), 'error');
+        }
       });
     }
   }

@@ -13,7 +13,12 @@ import { UsuarioService } from '../../services/usuario.service';
     <div class="change-container">
       <div class="change-card">
         <div class="header">
-          <div class="icon-header">🔐</div>
+          <div class="icon-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
           <h2>Actualizar Contraseña</h2>
           <p>Su contraseña actual es temporal. Por seguridad, debe crear una nueva para continuar.</p>
         </div>
@@ -90,7 +95,7 @@ export class CambiarPasswordComponent implements OnInit {
 
     this.cargando = true;
     // Llamamos al servicio para actualizar la contraseña y poner esTemporal en false
-    this.usuarioService.actualizarPassword(this.idUsuario!, this.pass1).subscribe({
+    this.usuarioService.actualizarPassword(this.idUsuario!, this.pass1, false).subscribe({
       next: () => {
         this.exito = true;
         setTimeout(() => {

@@ -36,9 +36,8 @@ export class UsuarioService {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
-  actualizarPassword(id: number, nuevaPass: string): Observable<any> {
-    // Enviamos el objeto con la nueva contraseña y esTemporal en false
-    return this.http.put(`${this.baseUrl}/${id}/cambiar-password`, { contrasena: nuevaPass });
+  actualizarPassword(id: number, nuevaPass: string, esTemporal: boolean = false): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}/cambiar-password`, { contrasena: nuevaPass, esTemporal });
   }
 
   generarPasswordAleatoria(): string {

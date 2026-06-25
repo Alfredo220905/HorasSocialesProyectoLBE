@@ -2,9 +2,11 @@ package com.cementerio.service;
 
 import com.cementerio.entity.Usuario;
 import com.cementerio.repository.UsuarioRepository;
+import com.cementerio.repository.AuditoriaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;  
 
@@ -14,6 +16,7 @@ public class UsuarioService {
 
     private final UsuarioRepository repo;
     private final PasswordEncoder passwordEncoder;
+    private final AuditoriaRepository auditoriaRepository;
     private final com.cementerio.repository.CementerioRepository cementerioRepo;
 
     public Usuario validar(String correo, String contrasena) {
@@ -76,15 +79,17 @@ public class UsuarioService {
         return repo.save(existente);
     }
 
+    @Transactional
     public void eliminar(Long id) {
+        auditoriaRepository.desvincularUsuario(id);
         repo.deleteById(id);
     }
 
-    public Usuario actualizarPassword(Long id, String nuevaPass) {
+    public Usuario actualizarPassword(Long id, String nuevaPass, Boolean esTemporal) {
         Usuario u = repo.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         u.setContrasena(passwordEncoder.encode(nuevaPass));
-        u.setEsTemporal(false); // Al cambiarla, deja de ser temporal
-        System.out.println("DEBUG: Contraseña actualizada para " + u.getCorreo() + ". esTemporal puesto en FALSE.");
+        u.setEsTemporal(esTemporal != null ? esTemporal : false);
+        System.out.println("DEBUG: Contraseña actualizada para " + u.getCorreo() + ". esTemporal puesto en " + u.getEsTemporal());
         return repo.save(u);
     }
 
