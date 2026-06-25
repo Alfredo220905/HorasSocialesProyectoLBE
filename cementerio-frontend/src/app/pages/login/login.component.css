@@ -83,6 +83,7 @@
   backdrop-filter: blur(6px);
   max-width: 400px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .alcaldia-logo {
@@ -221,7 +222,8 @@
 
   .login-box {
     padding: 1.5rem;
-    max-width: 95%;
+    width: 100%;
+    max-width: 100%;
   }
 
   .alcaldia-logo {
