@@ -11,7 +11,7 @@ import { CementerioService } from '../../services/cementerio.service';
 })
 export class Monitoreo implements OnInit {
   cementerios: any[] = [];
-  selectedCementerio: any = null;
+  selectedCementerio: any = null; 
   espaciosFlat: any[] = [];
   loading = false;
 
