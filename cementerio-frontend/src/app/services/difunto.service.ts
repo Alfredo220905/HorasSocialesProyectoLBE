@@ -27,14 +27,16 @@ export interface DifuntoDTO {
   requiereRenovacion: boolean;
   
   correlativo?: string;
-  edad?: number;
+  edad?: string;
   sexo?: string;
   estadoCivil?: string;
   causaMuerte?: string;
   domicilioFallecido?: string;
   nombreResponsable?: string;
+  duiResponsable?: string;
   domicilioResponsable?: string;
   celularResponsable?: string;
+  tipoDocumentoDifunto?: string;
   horaFallecimiento?: string;
   horaEntierro?: string;
   firmasAutorizadas?: boolean;

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { CementerioService } from '../../services/cementerio.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -96,6 +97,13 @@ import { Router } from '@angular/router';
               <option value="VISITANTE">VISITANTE</option>
             </select>
           </div>
+          <div class="form-group" *ngIf="nuevoRol === 'OPERADOR'">
+            <label>Sede Asignada</label>
+            <select [(ngModel)]="nuevoCementerioId" class="modal-input">
+              <option [ngValue]="null">Ninguno / Global</option>
+              <option *ngFor="let c of cementerios" [ngValue]="c.id">{{ c.nombre }}</option>
+            </select>
+          </div>
           <div class="modal-actions">
             <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
             <button class="btn-confirm" (click)="confirmarEdicion()">Guardar</button>
@@ -158,24 +166,24 @@ import { Router } from '@angular/router';
       border-bottom: 2px solid #f8f9fa;
       padding-bottom: 1.5rem;
     }
-    .icon-title { display: flex; align-items: center; gap: 0.8rem; color: #1e293b; }
+    .icon-title { display: flex; align-items: center; gap: 0.8rem; color: var(--text-main); }
     .header-actions { display: flex; gap: 1rem; }
     
     .btn-refresh {
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
       padding: 0.8rem 1.2rem;
       border-radius: 10px;
       font-weight: 700;
-      color: #475569;
+      color: var(--text-main);
       cursor: pointer;
       transition: 0.2s;
     }
-    .btn-refresh:hover { background: #e2e8f0; color: #1e293b; }
+    .btn-refresh:hover { background: #e2e8f0; color: var(--text-main); }
 
-    h2 { margin: 0; color: #1e293b; font-size: 1.8rem; }
-    .subtitle { margin: 0.3rem 0 0; color: #64748b; font-size: 0.95rem; }
+    h2 { margin: 0; color: var(--text-main); font-size: 1.8rem; }
+    .subtitle { margin: 0.3rem 0 0; color: var(--text-muted); font-size: 0.95rem; }
 
     .btn-add { 
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -191,14 +199,14 @@ import { Router } from '@angular/router';
     }
     .btn-add:hover { background: #be2875; transform: translateY(-2px); }
 
-    .table-card { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f1f5f9; }
+    .table-card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); }
     
     table { width: 100%; border-collapse: collapse; text-align: left; }
-    th { padding: 1.2rem; background: #f8fafc; color: #64748b; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
-    td { padding: 1.2rem; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; color: #334155; }
-    tr:hover { background: #fdf2f8; }
+    th { padding: 1.2rem; background: var(--table-header-bg); color: var(--text-muted); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+    td { padding: 1.2rem; border-bottom: 1px solid var(--border-table); font-size: 0.95rem; color: var(--text-main); }
+    tr:hover { background: var(--hover-bg); }
 
-    .id-cell { font-weight: 700; color: #94a3b8; }
+    .id-cell { font-weight: 700; color: var(--text-muted); }
     .user-info { display: flex; align-items: center; gap: 1rem; font-weight: 600; }
     .avatar { min-width: 32px; width: 32px; height: 32px; background: #fbcfe8; color: #d73387; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 0.8rem; }
 
@@ -206,9 +214,9 @@ import { Router } from '@angular/router';
     .role-badge.ADMIN { background: #fee2e2; color: #991b1b; }
     .role-badge.INFORMATICA { background: #e0f2fe; color: #075985; }
     .role-badge.OPERADOR { background: #fef3c7; color: #92400e; }
-    .role-badge.VISITANTE { background: #f1f5f9; color: #475569; }
+    .role-badge.VISITANTE { background: var(--card-bg); color: var(--text-main); }
 
-    .sede-text { color: #64748b; font-size: 0.9rem; font-style: italic; }
+    .sede-text { color: var(--text-muted); font-size: 0.9rem; font-style: italic; }
 
     .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
     .status-dot.active { background: #22c55e; }
@@ -216,8 +224,8 @@ import { Router } from '@angular/router';
 
     .actions-cell { display: flex; gap: 0.5rem; }
     .btn-action { 
-      background: white; 
-      border: 1px solid #e2e8f0; 
+      background: var(--primary-color); 
+      border: none; 
       width: 36px; 
       height: 36px; 
       border-radius: 8px; 
@@ -226,13 +234,14 @@ import { Router } from '@angular/router';
       justify-content: center; 
       align-items: center; 
       transition: 0.2s;
-      color: #64748b;
+      color: white;
     }
-    .btn-action.edit:hover { background: #e0f2fe; border-color: #0ea5e9; color: #0ea5e9; }
-    .btn-action.password:hover { background: #fef3c7; border-color: #f59e0b; color: #f59e0b; }
-    .btn-action.delete:hover { background: #fee2e2; border-color: #ef4444; color: #ef4444; }
+    .btn-action:hover { transform: scale(1.1); filter: brightness(1.1); }
+    .btn-action.edit { background: #0ea5e9; }
+    .btn-action.password { background: #f59e0b; }
+    .btn-action.delete { background: #ef4444; }
 
-    .empty-state { padding: 4rem; text-align: center; color: #94a3b8; }
+    .empty-state { padding: 4rem; text-align: center; color: var(--text-muted); }
 
     /* Estilos de Modal */
     .modal-overlay {
@@ -241,11 +250,11 @@ import { Router } from '@angular/router';
       z-index: 1000; animation: fadeIn 0.3s ease;
     }
     .modal-content {
-      background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px;
+      background: var(--card-bg); padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
-    .modal-content h3 { margin-top: 0; color: #1e293b; margin-bottom: 0.5rem; }
-    .modal-content p { color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .modal-content h3 { margin-top: 0; color: var(--text-main); margin-bottom: 0.5rem; }
+    .modal-content p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
     .form-group {
       margin-bottom: 1rem;
       text-align: left;
@@ -254,12 +263,12 @@ import { Router } from '@angular/router';
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 600;
-      color: #334155;
+      color: var(--text-main);
     }
     .modal-input {
       width: 100%;
       padding: 0.75rem;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       font-size: 1rem;
       outline: none;
@@ -269,10 +278,10 @@ import { Router } from '@angular/router';
     .modal-input:focus { border-color: #d73387; box-shadow: 0 0 0 3px rgba(215,51,135,0.1); }
     .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; }
     .btn-cancel {
-      background: #f1f5f9; color: #475569; border: none; padding: 0.8rem 1.2rem;
+      background: var(--table-header-bg); color: var(--text-main); border: none; padding: 0.8rem 1.2rem;
       border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
     }
-    .btn-cancel:hover { background: #e2e8f0; }
+    .btn-cancel:hover { background: var(--border-table); }
     .btn-confirm {
       background: #0ea5e9; color: white; border: none; padding: 0.8rem 1.2rem;
       border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
@@ -315,7 +324,10 @@ export class GestionUsuariosComponent implements OnInit {
   nuevoCorreo = '';
   nuevoRol = '';
   nuevaClave = '';
+  nuevoCementerioId: number | null = null;
   idEliminar: number | null = null;
+  
+  cementerios: any[] = [];
 
   showAlertModal = false;
   alertTitle = '';
@@ -324,11 +336,20 @@ export class GestionUsuariosComponent implements OnInit {
 
   constructor(
     private usuarioService: UsuarioService,
+    private cementerioService: CementerioService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.cargarUsuarios();
+    this.cargarCementerios();
+  }
+
+  cargarCementerios() {
+    this.cementerioService.getCementerios().subscribe({
+      next: (res) => this.cementerios = res,
+      error: (err) => console.error('Error cargando cementerios:', err)
+    });
   }
 
   cargarUsuarios() {
@@ -350,6 +371,7 @@ export class GestionUsuariosComponent implements OnInit {
     this.nuevoCorreo = '';
     this.nuevoRol = '';
     this.nuevaClave = '';
+    this.nuevoCementerioId = null;
     this.idEliminar = null;
   }
 
@@ -368,6 +390,7 @@ export class GestionUsuariosComponent implements OnInit {
     this.usuarioActual = u;
     this.nuevoCorreo = u.correo;
     this.nuevoRol = u.rol;
+    this.nuevoCementerioId = u.cementerio ? u.cementerio.id : null;
     this.showEditModal = true;
   }
 
@@ -377,7 +400,7 @@ export class GestionUsuariosComponent implements OnInit {
         idUsuario: this.usuarioActual.idUsuario,
         correo: this.nuevoCorreo,
         rol: this.nuevoRol,
-        cementerio: this.usuarioActual.cementerio,
+        cementerio: (this.nuevoRol === 'OPERADOR' && this.nuevoCementerioId) ? { id: this.nuevoCementerioId } : null,
         esTemporal: this.usuarioActual.esTemporal
       };
       this.usuarioService.actualizarUsuario(this.usuarioActual.idUsuario!, payload).subscribe({

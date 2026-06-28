@@ -48,8 +48,8 @@ public class ReportesService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public byte[] generarReporteOcupacionExcel() {
-        List<FilaOcupacion> filas = obtenerFilasOcupacion();
+    public byte[] generarReporteOcupacionExcel(Long cementerioId) {
+        List<FilaOcupacion> filas = obtenerFilasOcupacion(cementerioId);
 
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Ocupacion");
@@ -65,7 +65,7 @@ public class ReportesService {
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             String[] headers = {
-                "Cementerio", "Seccion", "Parcela", "Lote", "Espacio",
+                "Cementerio", "Seccion", "Parcela", "Fila", "Columna", "Espacio",
                 "Estado", "Difunto", "Propietario", "DUI propietario"
             };
 
@@ -78,22 +78,21 @@ public class ReportesService {
             int rowIndex = 1;
             int ocupados = 0;
             int disponibles = 0;
-            int mantenimiento = 0;
 
             for (FilaOcupacion fila : filas) {
                 Row row = sheet.createRow(rowIndex++);
                 row.createCell(0).setCellValue(fila.cementerio());
                 row.createCell(1).setCellValue(fila.seccion());
                 row.createCell(2).setCellValue(fila.parcela());
-                row.createCell(3).setCellValue(fila.lote());
-                row.createCell(4).setCellValue(fila.espacio());
-                row.createCell(5).setCellValue(fila.estado());
-                row.createCell(6).setCellValue(fila.difunto());
-                row.createCell(7).setCellValue(fila.propietario());
-                row.createCell(8).setCellValue(fila.duiPropietario());
+                row.createCell(3).setCellValue(fila.fila());
+                row.createCell(4).setCellValue(fila.columna());
+                row.createCell(5).setCellValue(fila.espacio());
+                row.createCell(6).setCellValue(fila.estado());
+                row.createCell(7).setCellValue(fila.difunto());
+                row.createCell(8).setCellValue(fila.propietario());
+                row.createCell(9).setCellValue(fila.duiPropietario());
 
                 if ("OCUPADO".equals(fila.estado())) ocupados++;
-                else if ("EN_MANTENIMIENTO".equals(fila.estado())) mantenimiento++;
                 else disponibles++;
             }
 
@@ -108,9 +107,6 @@ public class ReportesService {
             Row disponiblesRow = sheet.createRow(rowIndex++);
             disponiblesRow.createCell(0).setCellValue("Disponibles");
             disponiblesRow.createCell(1).setCellValue(disponibles);
-            Row mantenimientoRow = sheet.createRow(rowIndex);
-            mantenimientoRow.createCell(0).setCellValue("En mantenimiento");
-            mantenimientoRow.createCell(1).setCellValue(mantenimiento);
 
             for (int i = 0; i < headers.length; i++) {
                 sheet.autoSizeColumn(i);
@@ -123,8 +119,8 @@ public class ReportesService {
         }
     }
 
-    public byte[] generarReporteOcupacionPdf() {
-        List<FilaOcupacion> filas = obtenerFilasOcupacion();
+    public byte[] generarReporteOcupacionPdf(Long cementerioId) {
+        List<FilaOcupacion> filas = obtenerFilasOcupacion(cementerioId);
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Document document = new Document(PageSize.LETTER.rotate());
@@ -137,13 +133,14 @@ public class ReportesService {
             document.add(new Paragraph("Generado: " + LocalDate.now(), subtitleFont));
             document.add(new Paragraph(" "));
 
-            PdfPTable table = new PdfPTable(new float[] { 2.2f, 1.3f, 1.5f, 1.1f, 1.1f, 1.4f, 2.2f, 2.2f });
+            PdfPTable table = new PdfPTable(new float[] { 2.1f, 1.3f, 1.4f, 0.9f, 1.1f, 1.0f, 1.3f, 2.1f, 2.1f });
             table.setWidthPercentage(100);
 
             agregarEncabezado(table, "Cementerio");
             agregarEncabezado(table, "Seccion");
             agregarEncabezado(table, "Parcela");
-            agregarEncabezado(table, "Lote");
+            agregarEncabezado(table, "Fila");
+            agregarEncabezado(table, "Columna");
             agregarEncabezado(table, "Espacio");
             agregarEncabezado(table, "Estado");
             agregarEncabezado(table, "Difunto");
@@ -151,27 +148,26 @@ public class ReportesService {
 
             int ocupados = 0;
             int disponibles = 0;
-            int mantenimiento = 0;
 
             for (FilaOcupacion fila : filas) {
                 table.addCell(fila.cementerio());
                 table.addCell(fila.seccion());
                 table.addCell(fila.parcela());
-                table.addCell(fila.lote());
+                table.addCell(fila.fila());
+                table.addCell(fila.columna());
                 table.addCell(fila.espacio());
-                table.addCell(fila.estado());
+                agregarCeldaPequena(table, fila.estado());
                 table.addCell(fila.difunto());
                 table.addCell(fila.propietario());
 
                 if ("OCUPADO".equals(fila.estado())) ocupados++;
-                else if ("EN_MANTENIMIENTO".equals(fila.estado())) mantenimiento++;
                 else disponibles++;
             }
 
             document.add(table);
             document.add(new Paragraph(" "));
             document.add(new Paragraph("Total espacios: " + filas.size(), subtitleFont));
-            document.add(new Paragraph("Ocupados: " + ocupados + " | Disponibles: " + disponibles + " | En mantenimiento: " + mantenimiento, subtitleFont));
+            document.add(new Paragraph("Ocupados: " + ocupados + " | Disponibles: " + disponibles, subtitleFont));
             document.close();
             return out.toByteArray();
         } catch (Exception e) {
@@ -183,7 +179,7 @@ public class ReportesService {
         return transferenciaRepository.findAll();
     }
 
-    private List<FilaOcupacion> obtenerFilasOcupacion() {
+    private List<FilaOcupacion> obtenerFilasOcupacion(Long filtroCementerioId) {
         List<FilaOcupacion> filas = new ArrayList<>();
         
         org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
@@ -219,6 +215,13 @@ public class ReportesService {
                 }
             }
 
+            // Si se pasa un filtro explícito de cementerio
+            if (filtroCementerioId != null && cripta.getParcela() != null && cripta.getParcela().getSeccion() != null && cripta.getParcela().getSeccion().getCementerio() != null) {
+                if (!cripta.getParcela().getSeccion().getCementerio().getId().equals(filtroCementerioId)) {
+                    continue;
+                }
+            }
+
             List<Espacio> espacios = cripta.getEspacios() == null ? List.of() : cripta.getEspacios();
             for (Espacio espacio : espacios) {
                 Difunto difunto = espacio.getDifunto();
@@ -229,7 +232,8 @@ public class ReportesService {
                     cementerio,
                     seccion,
                     parcela,
-                    "Fila " + cripta.getFila() + " / Columna " + cripta.getColumna(),
+                    String.valueOf(cripta.getFila()),
+                    String.valueOf(cripta.getColumna()),
                     String.valueOf(espacio.getNumero()),
                     estadoTexto,
                     difunto != null ? texto(difunto.getNombre(), "Sin nombre") : "",
@@ -250,6 +254,14 @@ public class ReportesService {
         cell.setPadding(5);
         table.addCell(cell);
     }
+    
+    private void agregarCeldaPequena(PdfPTable table, String texto) {
+        Font font = new Font(Font.FontFamily.HELVETICA, 7, Font.NORMAL, BaseColor.BLACK);
+        PdfPCell cell = new PdfPCell(new Phrase(texto, font));
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(4);
+        table.addCell(cell);
+    }
 
     private String texto(String valor, String fallback) {
         return valor == null || valor.trim().isEmpty() ? fallback : valor;
@@ -259,7 +271,8 @@ public class ReportesService {
         String cementerio,
         String seccion,
         String parcela,
-        String lote,
+        String fila,
+        String columna,
         String espacio,
         String estado,
         String difunto,

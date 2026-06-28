@@ -26,17 +26,19 @@ public class Difunto {
     private java.time.LocalTime horaEntierro;
 
     private String correlativo;
-    private Integer edad;
+    private String edad;
     private String sexo;
     private String estadoCivil;
     private String causaMuerte;
     private String domicilioFallecido;
     
     private String nombreResponsable;
+    private String duiResponsable;
     private String domicilioResponsable;
     private String celularResponsable;
     
-    @Transient
+    private String tipoDocumentoDifunto;
+    
     private Boolean firmasAutorizadas;
 
     // Campos de Validaciones

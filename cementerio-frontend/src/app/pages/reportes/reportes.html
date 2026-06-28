@@ -6,6 +6,14 @@
 
   <div class="alert error" *ngIf="errorMsg">{{ errorMsg }}</div>
 
+  <div class="filter-section" *ngIf="esAdmin" style="margin-bottom: 2rem; background: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
+    <div style="font-weight: 600; color: var(--text-main);">Filtrar reportes por cementerio:</div>
+    <select [(ngModel)]="cementerioSeleccionado" style="flex: 1; max-width: 400px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;">
+      <option [ngValue]="null">Todos los cementerios (Reporte Global)</option>
+      <option *ngFor="let c of cementerios" [ngValue]="c.id">{{ c.nombre }}</option>
+    </select>
+  </div>
+
   <div class="cards-grid">
     <!-- Card Excel -->
     <div class="report-card excel-card">

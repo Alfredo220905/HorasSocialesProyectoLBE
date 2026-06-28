@@ -49,6 +49,11 @@ export class CementerioComponent implements OnInit {
   }
 
   crear() {
+    if (!this.nombre || this.nombre.trim() === '') {
+      this.mostrarModalAlerta('error', 'Error', 'El nombre del cementerio es obligatorio');
+      return;
+    }
+
     const data = {
       nombre: this.nombre,
       tienePrivado: this.tienePrivado

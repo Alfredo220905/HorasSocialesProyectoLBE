@@ -22,15 +22,18 @@ public class DifuntoDTO {
     private List<String> beneficiarios;
     private boolean requiereRenovacion;
     private String correlativo;
-    private Integer edad;
+    private String edad;
     private String sexo;
     private String estadoCivil;
     private String causaMuerte;
     private String domicilioFallecido;
     
     private String nombreResponsable;
+    private String duiResponsable;
     private String domicilioResponsable;
     private String celularResponsable;
+    
+    private String tipoDocumentoDifunto;
     
     private String horaFallecimiento;
     private String horaEntierro;

@@ -78,12 +78,12 @@ import { AuthService } from '../../services/auth.service';
 
     /* Modal styles */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-content { background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-    .modal-header h2 { margin: 0 0 1rem 0; font-size: 1.5rem; color: #111827; }
+    .modal-content { background: var(--card-bg); padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal-header h2 { margin: 0 0 1rem 0; font-size: 1.5rem; color: var(--text-main); }
     .modal-header.error h2 { color: #dc2626; }
     .modal-header.exito h2 { color: #16a34a; }
     .modal-body p { margin: 0; color: #4b5563; line-height: 1.5; }
-    .btn-cancel { background: white; border: 1px solid #d1d5db; color: #374151; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+    .btn-cancel { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
     .btn-primary { background: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

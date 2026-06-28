@@ -45,6 +45,7 @@ public class DifuntoService {
         dto.setCausaMuerte(difunto.getCausaMuerte());
         dto.setDomicilioFallecido(difunto.getDomicilioFallecido());
         dto.setNombreResponsable(difunto.getNombreResponsable());
+        dto.setDuiResponsable(difunto.getDuiResponsable());
         dto.setDomicilioResponsable(difunto.getDomicilioResponsable());
         dto.setCelularResponsable(difunto.getCelularResponsable());
         dto.setHoraFallecimiento(difunto.getHoraFallecimiento() != null ? difunto.getHoraFallecimiento().toString() : null);
@@ -53,6 +54,7 @@ public class DifuntoService {
         dto.setCruzNombreYFecha(difunto.getCruzNombreYFecha());
         dto.setMaterialPlaca(difunto.getMaterialPlaca());
         dto.setMedidasPlaca(difunto.getMedidasPlaca());
+        dto.setTipoDocumentoDifunto(difunto.getTipoDocumentoDifunto());
 
         if (difunto.getDocumentosJson() != null && !difunto.getDocumentosJson().isEmpty()) {
             try {
@@ -144,7 +146,25 @@ public class DifuntoService {
     }
 
     private Difunto procesarDifunto(Difunto difunto, DifuntoDTO dto) {
-        duiValidationService.validarDuiUnico(dto.getDui(), "DIFUNTO", difunto.getId());
+        if (dto.getDuiResponsable() == null || dto.getDuiResponsable().trim().isEmpty()) {
+            throw new RuntimeException("El DUI del responsable es obligatorio.");
+        }
+        
+        if (dto.getCelularResponsable() == null || dto.getCelularResponsable().trim().isEmpty()) {
+            throw new RuntimeException("El celular del responsable es obligatorio.");
+        }
+        
+        if (dto.getTipoDocumentoDifunto() == null || dto.getTipoDocumentoDifunto().trim().isEmpty()) {
+            dto.setTipoDocumentoDifunto("DUI"); // Por defecto
+        }
+        
+        if ("DUI".equalsIgnoreCase(dto.getTipoDocumentoDifunto())) {
+            if (dto.getDui() == null || dto.getDui().trim().isEmpty()) {
+                throw new RuntimeException("El DUI del difunto es obligatorio cuando es mayor de edad.");
+            }
+            duiValidationService.validarDuiUnico(dto.getDui(), "DIFUNTO", difunto.getId());
+        }
+
         
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Usuario currentUser = null;
@@ -167,7 +187,9 @@ public class DifuntoService {
         difunto.setEstadoCivil(dto.getEstadoCivil());
         difunto.setCausaMuerte(dto.getCausaMuerte());
         difunto.setDomicilioFallecido(dto.getDomicilioFallecido());
+        difunto.setTipoDocumentoDifunto(dto.getTipoDocumentoDifunto());
         difunto.setNombreResponsable(dto.getNombreResponsable());
+        difunto.setDuiResponsable(dto.getDuiResponsable());
         difunto.setDomicilioResponsable(dto.getDomicilioResponsable());
         difunto.setCelularResponsable(dto.getCelularResponsable());
         difunto.setFirmasAutorizadas(dto.getFirmasAutorizadas());
@@ -190,13 +212,9 @@ public class DifuntoService {
             }
             
 
-            // Validar Placa Osario
-            if (!"Aluminio".equalsIgnoreCase(dto.getMaterialPlaca()) || !"25x10 cm".equalsIgnoreCase(dto.getMedidasPlaca())) {
-                throw new RuntimeException("VALIDACIÓN RECHAZADA: La placa para Osarios debe ser estrictamente de 'Aluminio' y medir '25x10 cm'.");
-            }
-            
-            difunto.setMaterialPlaca(dto.getMaterialPlaca());
-            difunto.setMedidasPlaca(dto.getMedidasPlaca());
+            // Asignar Placa Osario por defecto
+            difunto.setMaterialPlaca("Aluminio");
+            difunto.setMedidasPlaca("25x10 cm");
             difunto.setOsario(osario);
             difunto.setEspacio(null);
             difunto.setEsPrivado(false);
@@ -224,10 +242,9 @@ public class DifuntoService {
             difunto.setEsPrivado(esPrivado);
 
             if (esPrivado) {
-                // JARDÍN (Privado)
-                if (!"Base de hierro con letras de bronce".equalsIgnoreCase(dto.getMaterialPlaca()) || !"40x20 cm".equalsIgnoreCase(dto.getMedidasPlaca())) {
-                    throw new RuntimeException("VALIDACIÓN RECHAZADA: La placa para Cementerio Jardín debe ser de 'Base de hierro con letras de bronce' y medir '40x20 cm'.");
-                }
+                // JARDÍN (Privado) - Setear Placa automáticamente
+                difunto.setMaterialPlaca("Base de hierro con letras de bronce");
+                difunto.setMedidasPlaca("40x20 cm");
                 
                 // Regla de Oro: Cliente al día
                 Cliente dueño = espacio.getCripta().getCliente();
@@ -236,9 +253,6 @@ public class DifuntoService {
                 if (tieneDeuda) {
                     throw new RuntimeException("VALIDACIÓN RECHAZADA: El propietario del lote tiene cuotas de mantenimiento PENDIENTES. Debe solventarlas antes de la inhumación.");
                 }
-                
-                difunto.setMaterialPlaca(dto.getMaterialPlaca());
-                difunto.setMedidasPlaca(dto.getMedidasPlaca());
 
             } else {
                 // GENERAL (Público)

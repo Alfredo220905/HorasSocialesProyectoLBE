@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { DifuntoService, DifuntoDTO } from '../../services/difunto.service';
 import { AuthService } from '../../services/auth.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-difuntos',
@@ -37,19 +39,20 @@ import { AuthService } from '../../services/auth.service';
           <span class="stat-label">Pendientes de Pago</span>
           <span class="stat-value">{{ totalPendientes }}</span>
         </div>
-        <div class="stat-card alert">
-          <span class="stat-label">Requieren Renovación</span>
-          <span class="stat-value">{{ totalRenovacion }}</span>
-        </div>
       </div>
 
       <div class="card filters-card">
         <div class="search-box">
           <svg class="search-icon-svg" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" placeholder="Buscar por nombre, DUI o ubicación..." [(ngModel)]="filtro">
+          <input type="text" placeholder="Buscar por nombre, DUI o ubicación..." [(ngModel)]="filtro" (ngModelChange)="paginaActual = 1">
         </div>
-        <div class="filter-group">
-          <select [(ngModel)]="filtroEstado">
+        <div class="filter-group" style="display: flex; gap: 0.5rem;">
+          <select [(ngModel)]="filtroTipo" (change)="paginaActual = 1">
+            <option value="">Todos los sectores</option>
+            <option value="Privado">Privado (Jardín)</option>
+            <option value="Público">Público (General)</option>
+          </select>
+          <select [(ngModel)]="filtroEstado" (change)="paginaActual = 1">
             <option value="">Todos los estados</option>
             <option value="AL DÍA">Al Día</option>
             <option value="PENDIENTE">Pendiente</option>
@@ -73,7 +76,7 @@ import { AuthService } from '../../services/auth.service';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let d of difuntosFiltrados">
+            <tr *ngFor="let d of difuntosPaginados">
               <td>
                 <div class="difunto-info">
                   <span class="name">{{ d.nombre }}</span>
@@ -83,18 +86,18 @@ import { AuthService } from '../../services/auth.service';
                 <span class="date">{{ d.dui || '—' }}</span>
               </td>
               <td>
-                <span class="date">{{ d.fechaNacimiento || 'N/A' }}</span>
+                <span class="date">{{ d.fechaNacimiento || 'No registrado' }}</span>
               </td>
               <td>
                 <div class="date-info">
                   <span class="date">{{ d.fechaFallecimiento }}</span>
-                  <span class="elapsed" [class.alert]="d.requiereRenovacion">
+                  <span class="elapsed">
                     {{ d.anosTranscurridos }} años transcurridos
                   </span>
                 </div>
               </td>
               <td>
-                <span class="date">{{ d.fechaEntierro || 'N/A' }}</span>
+                <span class="date">{{ d.fechaEntierro || 'No registrado' }}</span>
               </td>
               <td>
                 <div class="location-info">
@@ -134,14 +137,17 @@ import { AuthService } from '../../services/auth.service';
                   <button class="btn-action delete" title="Eliminar Difunto" (click)="eliminar(d)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                   </button>
-                  <button class="btn-action renew" *ngIf="d.requiereRenovacion" title="Renovar Contrato">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-                  </button>
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="pagination-controls" *ngIf="totalPaginas > 1">
+        <button class="btn-page" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+        <span class="page-info">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button class="btn-page" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
       </div>
 
       <!-- Modal de Registro -->
@@ -157,19 +163,32 @@ import { AuthService } from '../../services/auth.service';
             
             <h3 class="section-title">Datos Personales del Difunto</h3>
             <div class="form-row">
-              <div class="form-group">
+              <div class="form-group" style="grid-column: span 2;">
                 <label>Nombre completo *</label>
                 <input type="text" [(ngModel)]="nuevoDifunto.nombre" placeholder="Nombre del difunto">
               </div>
+            </div>
+            <div class="form-row">
               <div class="form-group">
-                <label>DUI</label>
-                <input type="text" [(ngModel)]="nuevoDifunto.dui" (input)="onDuiInput($event)" maxlength="10" placeholder="Ej: 01234567-8" [disabled]="modoEdicion">
+                <label>Identificación (DUI / Partida) *</label>
+                <select [(ngModel)]="nuevoDifunto.tipoDocumentoDifunto" (change)="onTipoDocumentoChange()">
+                  <option value="DUI">DUI (Mayor de edad)</option>
+                  <option value="PARTIDA">Partida de Nacimiento (Menor de edad)</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="nuevoDifunto.tipoDocumentoDifunto === 'DUI' || !nuevoDifunto.tipoDocumentoDifunto">
+                <label>DUI *</label>
+                <input type="text" [(ngModel)]="nuevoDifunto.dui" (input)="onDuiInput($event)" maxlength="10" placeholder="Ej: 01234567-8">
+              </div>
+              <div class="form-group" *ngIf="nuevoDifunto.tipoDocumentoDifunto === 'PARTIDA'">
+                <label>Partida de Nacimiento (PDF/Img) *</label>
+                <input type="file" (change)="onPartidaSelected($event)" accept=".pdf,.doc,.docx,.jpg,.png" class="form-control">
               </div>
             </div>
             <div class="form-row-3">
               <div class="form-group">
-                <label>Edad</label>
-                <input type="number" [(ngModel)]="nuevoDifunto.edad" placeholder="Edad">
+                <label>Edad Calculada</label>
+                <input type="text" [(ngModel)]="nuevoDifunto.edad" placeholder="Automática" readonly style="background-color: var(--card-bg); cursor: not-allowed;">
               </div>
               <div class="form-group">
                 <label>Sexo</label>
@@ -200,7 +219,7 @@ import { AuthService } from '../../services/auth.service';
             <div class="form-row">
               <div class="form-group">
                 <label>Fecha de Fallecimiento *</label>
-                <input type="date" [(ngModel)]="nuevoDifunto.fechaFallecimiento">
+                <input type="date" [(ngModel)]="nuevoDifunto.fechaFallecimiento" (change)="calcularEdad()">
               </div>
               <div class="form-group">
                 <label>Hora de Fallecimiento</label>
@@ -214,7 +233,7 @@ import { AuthService } from '../../services/auth.service';
               </div>
               <div class="form-group">
                 <label>Fecha de Nacimiento</label>
-                <input type="date" [(ngModel)]="nuevoDifunto.fechaNacimiento">
+                <input type="date" [(ngModel)]="nuevoDifunto.fechaNacimiento" (change)="calcularEdad()">
               </div>
             </div>
 
@@ -225,13 +244,19 @@ import { AuthService } from '../../services/auth.service';
                 <input type="text" [(ngModel)]="nuevoDifunto.nombreResponsable" placeholder="Responsable del entierro">
               </div>
               <div class="form-group">
-                <label>Celular</label>
-                <input type="text" [(ngModel)]="nuevoDifunto.celularResponsable" placeholder="Teléfono de contacto">
+                <label>DUI Responsable *</label>
+                <input type="text" [(ngModel)]="nuevoDifunto.duiResponsable" (input)="onDuiResponsableInput($event)" maxlength="10" placeholder="Ej: 01234567-8">
               </div>
             </div>
-            <div class="form-group">
-              <label>Domicilio del Responsable</label>
-              <input type="text" [(ngModel)]="nuevoDifunto.domicilioResponsable" placeholder="Dirección del responsable">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Celular *</label>
+                <input type="text" [(ngModel)]="nuevoDifunto.celularResponsable" (input)="onTelefonoInput($event)" maxlength="8" placeholder="Ej: 77777777">
+              </div>
+              <div class="form-group">
+                <label>Domicilio del Responsable</label>
+                <input type="text" [(ngModel)]="nuevoDifunto.domicilioResponsable" placeholder="Dirección del responsable">
+              </div>
             </div>
             <div class="checkbox-group">
               <label>
@@ -253,14 +278,7 @@ import { AuthService } from '../../services/auth.service';
               </div>
             </div>
             
-            <!-- Selector Tipo de Inhumación -->
-            <div class="form-group custom-tipo-selector" *ngIf="!modoEdicion">
-              <label>Tipo de Inhumación (Sector)</label>
-              <div class="tipo-buttons">
-                <button [class.active]="tipoInhumacionUI === 'cripta'" (click)="setTipoInhumacion('cripta')" type="button">Lote / Fosa (Criptas)</button>
-                <button [class.active]="tipoInhumacionUI === 'osario'" (click)="setTipoInhumacion('osario')" type="button">Sector Osarios</button>
-              </div>
-            </div>
+            <!-- Selector Tipo de Inhumación (Oculto temporalmente) -->
 
             <!-- ESPACIOS CRIPTA / FOSA -->
             <ng-container *ngIf="!modoEdicion && tipoInhumacionUI === 'cripta'">
@@ -312,60 +330,13 @@ import { AuthService } from '../../services/auth.service';
                     <svg style="margin-right:4px;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <strong>Espacio seleccionado:</strong> {{ espacioSeleccionadoLabel }}
                   </div>
                   
-                  <!-- VALIDACIONES FÍSICAS CRIPTA -->
-                  <div class="validaciones-caja" *ngIf="nuevoDifunto.espacioId">
-                    <ng-container *ngIf="cementerioEsPrivado">
-                      <div class="alerta-privado">
-                        <svg style="margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> <strong>Regla Cementerio Jardín:</strong> La placa identificativa debe ser estrictamente de material "Base de hierro con letras de bronce" y medir "40x20 cm".
-                      </div>
-                      <div class="form-row">
-                        <div class="form-group">
-                          <label>Material Placa</label>
-                          <input type="text" [(ngModel)]="nuevoDifunto.materialPlaca" placeholder="Base de hierro con letras de bronce">
-                        </div>
-                        <div class="form-group">
-                          <label>Medidas Placa</label>
-                          <input type="text" [(ngModel)]="nuevoDifunto.medidasPlaca" placeholder="40x20 cm">
-                        </div>
-                      </div>
-                    </ng-container>
-                    
-                    <ng-container *ngIf="!cementerioEsPrivado">
-                      <div class="alerta-publico">
-                        <svg style="margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> <strong>Regla Cementerio General:</strong> Está prohibida la construcción de bóvedas de cemento. Confirme la colocación de Cruz tradicional.
-                      </div>
-                      <div class="checkbox-group">
-                        <label>
-                          <input type="checkbox" [(ngModel)]="nuevoDifunto.cruzNombreYFecha"> 
-                          Se colocará Cruz con Nombre y Fecha del difunto.
-                        </label>
-                      </div>
-                    </ng-container>
-                  </div>
                 </ng-container>
               </div>
             </ng-container>
 
-            <!-- ESPACIOS OSARIO -->
-            <ng-container *ngIf="!modoEdicion && tipoInhumacionUI === 'osario'">
-              <div class="alerta-privado">
-                <svg style="margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> <strong>Sector Osarios:</strong> Digite el ID del Osario (temporal) y complete la validación de la placa (Aluminio 25x10 cm).
-              </div>
-              <div class="form-group">
-                <label>ID del Osario *</label>
-                <input type="number" [(ngModel)]="nuevoDifunto.osarioId" placeholder="ID del osario">
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Material Placa</label>
-                  <input type="text" [(ngModel)]="nuevoDifunto.materialPlaca" placeholder="Aluminio">
-                </div>
-                <div class="form-group">
-                  <label>Medidas Placa</label>
-                  <input type="text" [(ngModel)]="nuevoDifunto.medidasPlaca" placeholder="25x10 cm">
-                </div>
-              </div>
-            </ng-container>
+
+
+            <!-- ESPACIOS OSARIO OCULTOS TEMPORALMENTE -->
 
             <h3 class="section-title" style="margin-top: 1.5rem;">Documentación Adjunta</h3>
             <!-- Área de carga de documentos -->
@@ -393,8 +364,14 @@ import { AuthService } from '../../services/auth.service';
       <!-- Modal de Detalles del Difunto -->
       <div class="modal-overlay" *ngIf="showModalDetalles && difuntoSeleccionado">
         <div class="modal-content">
-          <div class="modal-header">
-            <h2>Detalles del Difunto</h2>
+          <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <h2 style="margin: 0;">Detalles del Difunto</h2>
+              <button class="btn-action" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; width: auto; height: auto; background: #10b981; color: white;" (click)="descargarPDF()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Descargar PDF
+              </button>
+            </div>
             <button class="btn-close-modal" (click)="cerrarModalDetalles()">✕</button>
           </div>
           <div class="modal-body detalles-body">
@@ -414,23 +391,23 @@ import { AuthService } from '../../services/auth.service';
             <div class="detalle-grid">
               <div class="detalle-item">
                 <span class="label">Fecha Fallecimiento:</span>
-                <span class="value">{{ difuntoSeleccionado.fechaFallecimiento || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.fechaFallecimiento || 'No registrado' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Hora Fallecimiento:</span>
-                <span class="value">{{ difuntoSeleccionado.horaFallecimiento || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.horaFallecimiento || 'No registrada' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Fecha Entierro:</span>
-                <span class="value">{{ difuntoSeleccionado.fechaEntierro || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.fechaEntierro || 'No registrada' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Hora Entierro:</span>
-                <span class="value">{{ difuntoSeleccionado.horaEntierro || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.horaEntierro || 'No registrada' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Causa de Muerte:</span>
-                <span class="value">{{ difuntoSeleccionado.causaMuerte || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.causaMuerte || 'No registrada' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Años Transcurridos:</span>
@@ -439,44 +416,52 @@ import { AuthService } from '../../services/auth.service';
             </div>
 
             <hr class="divider">
-            <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Datos Personales</h3>
+            <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-main); font-size: 1rem;">Datos Personales</h3>
             <div class="detalle-grid">
               <div class="detalle-item">
                 <span class="label">Fecha Nacimiento:</span>
-                <span class="value">{{ difuntoSeleccionado.fechaNacimiento || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.fechaNacimiento || 'No registrado' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Edad:</span>
-                <span class="value">{{ difuntoSeleccionado.edad ? difuntoSeleccionado.edad + ' años' : 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.edad || 'No registrada' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Sexo:</span>
-                <span class="value">{{ difuntoSeleccionado.sexo || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.sexo || 'No registrado' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">Tipo de Documento:</span>
+                <span class="value">{{ difuntoSeleccionado.tipoDocumentoDifunto || 'DUI' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Estado Civil:</span>
-                <span class="value">{{ difuntoSeleccionado.estadoCivil || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.estadoCivil || 'No registrado' }}</span>
               </div>
               <div class="detalle-item" style="grid-column: span 2;">
                 <span class="label">Domicilio del Fallecido:</span>
-                <span class="value">{{ difuntoSeleccionado.domicilioFallecido || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.domicilioFallecido || 'No registrado' }}</span>
               </div>
             </div>
 
             <hr class="divider">
-            <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Responsable</h3>
+            <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-main); font-size: 1rem;">Responsable</h3>
             <div class="detalle-grid">
               <div class="detalle-item">
                 <span class="label">Nombre Responsable:</span>
-                <span class="value">{{ difuntoSeleccionado.nombreResponsable || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.nombreResponsable || 'No registrado' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="label">DUI Responsable:</span>
+                <span class="value">{{ difuntoSeleccionado.duiResponsable || 'No registrado' }}</span>
               </div>
               <div class="detalle-item">
                 <span class="label">Celular:</span>
-                <span class="value">{{ difuntoSeleccionado.celularResponsable || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.celularResponsable || 'No registrado' }}</span>
               </div>
               <div class="detalle-item" style="grid-column: span 2;">
                 <span class="label">Domicilio Responsable:</span>
-                <span class="value">{{ difuntoSeleccionado.domicilioResponsable || 'N/A' }}</span>
+                <span class="value">{{ difuntoSeleccionado.domicilioResponsable || 'No registrado' }}</span>
               </div>
               <div class="detalle-item" style="grid-column: span 2;">
                 <span class="label">Firmas Autorizadas:</span>
@@ -484,18 +469,7 @@ import { AuthService } from '../../services/auth.service';
               </div>
             </div>
             
-            <hr class="divider" *ngIf="difuntoSeleccionado.tipoCementerio === 'Privado' || difuntoSeleccionado.tipoCementerio === 'Osario'">
-            <h3 *ngIf="difuntoSeleccionado.tipoCementerio === 'Privado' || difuntoSeleccionado.tipoCementerio === 'Osario'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Placa y Material</h3>
-            <div class="detalle-grid" *ngIf="difuntoSeleccionado.tipoCementerio === 'Privado' || difuntoSeleccionado.tipoCementerio === 'Osario'">
-              <div class="detalle-item">
-                <span class="label">Material Placa:</span>
-                <span class="value">{{ difuntoSeleccionado.materialPlaca || 'N/A' }}</span>
-              </div>
-              <div class="detalle-item">
-                <span class="label">Medidas Placa:</span>
-                <span class="value">{{ difuntoSeleccionado.medidasPlaca || 'N/A' }}</span>
-              </div>
-            </div>
+
 
             <hr class="divider">
 
@@ -545,17 +519,17 @@ import { AuthService } from '../../services/auth.service';
                 </span>
               </div>
               
-              <div *ngIf="!pagosCargados || pagosCargados.length === 0" style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 1rem 0; background: #f9fafb; border-radius: 8px; margin-top: 0.5rem;">
+              <div *ngIf="!pagosCargados || pagosCargados.length === 0" style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0; background: #f9fafb; border-radius: 8px; margin-top: 0.5rem;">
                 No hay pagos registrados
               </div>
 
-              <div *ngFor="let pago of pagosCargados" style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #e5e7eb; padding: 0.8rem 1rem; border-radius: 8px; margin-top: 0.5rem;">
+              <div *ngFor="let pago of pagosCargados" style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border-color); padding: 0.8rem 1rem; border-radius: 8px; margin-top: 0.5rem;">
                 <div style="display: flex; flex-direction: column; gap: 0.2rem;">
-                  <strong style="color: #374151; font-size: 0.95rem;">{{ pago.concepto }}</strong>
-                  <span style="color: #6b7280; font-size: 0.8rem;">{{ pago.fecha }}</span>
+                  <strong style="color: var(--text-main); font-size: 0.95rem;">{{ pago.concepto }}</strong>
+                  <span style="color: var(--text-muted); font-size: 0.8rem;">{{ pago.fecha }}</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                  <span style="font-family: monospace; font-weight: bold; color: #111827; font-size: 1.1rem;">$ {{ pago.monto }}</span>
+                  <span style="font-family: monospace; font-weight: bold; color: var(--text-main); font-size: 1.1rem;">$ {{ pago.monto }}</span>
                   <span class="status-badge" [ngStyle]="{'background': pago.estado === 'PAGADO' ? '#dcfce7' : '#fee2e2', 'color': pago.estado === 'PAGADO' ? '#16a34a' : '#ef4444'}" style="padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">
                     {{ pago.estado }}
                   </span>
@@ -570,8 +544,8 @@ import { AuthService } from '../../services/auth.service';
       </div>
 
       <!-- Alerta Genérica Modal -->
-      <div class="modal-overlay" *ngIf="alertaModal.visible" style="z-index: 2000;">
-        <div class="modal-content modal-sm">
+      <div class="modal-overlay" *ngIf="alertaModal.visible" [ngStyle]="{'z-index': '99999'}">
+        <div class="modal-content modal-sm" style="box-shadow: 0 0 20px rgba(0,0,0,0.5);">
           <div class="modal-header" [ngClass]="alertaModal.tipo">
             <h2>{{ alertaModal.titulo }}</h2>
           </div>
@@ -591,6 +565,37 @@ import { AuthService } from '../../services/auth.service';
       padding: 2rem;
       max-width: 1400px;
       margin: 0 auto;
+    }
+
+    .pagination-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .btn-page {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: 0.2s;
+    }
+    .btn-page:hover:not([disabled]) {
+      background: var(--bg-color);
+      border-color: var(--primary-color);
+    }
+    .btn-page[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .page-info {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-muted);
     }
 
     .header-section {
@@ -748,23 +753,26 @@ import { AuthService } from '../../services/auth.service';
 
     .actions { display: flex; gap: 0.5rem; }
     .btn-action {
-      border: 1px solid var(--border-color);
-      background: var(--card-bg);
+      border: none;
+      background: var(--primary-color);
+      color: white;
       width: 36px;
       height: 36px;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .btn-action:hover { background: var(--bg-color); transform: scale(1.1); }
-    .btn-action.edit:hover { background: #e0f2fe; border-color: #0ea5e9; }
-    .btn-action.delete:hover { background: #fee2e2; border-color: #ef4444; }
-    .btn-action.renew { border-color: #ef4444; color: #ef4444; }
+    .btn-action:hover { transform: scale(1.1); filter: brightness(1.1); }
+    .btn-action.edit { background: #0ea5e9; }
+    .btn-action.delete { background: #ef4444; }
 
     /* Modal Styles */
     .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); display:flex; justify-content:center; align-items:center; z-index: 100; backdrop-filter: blur(4px); padding: 1rem; }
-    .modal-content { background:white; border-radius:16px; width:500px; max-height:90vh; overflow-y:auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal-content { background: var(--card-bg); border-radius:16px; width:500px; max-height:90vh; overflow-y:auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
     .modal-lg { width: 720px; }
     .modal-header { display:flex; justify-content:space-between; align-items:center; padding: 1.5rem 2rem 1rem; border-bottom: 2px solid #fce4f0; }
     .modal-header h2 { margin:0; color:#d63384; font-size: 1.3rem; }
@@ -773,11 +781,11 @@ import { AuthService } from '../../services/auth.service';
     .modal-body { padding: 1.5rem 2rem; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .form-group { margin-bottom: 1rem; }
-    .form-group label { display:block; font-size:0.85rem; font-weight:700; margin-bottom:0.5rem; color:#374151; }
+    .form-group label { display:block; font-size:0.85rem; font-weight:700; margin-bottom:0.5rem; color: var(--text-main); }
     .form-group input, .form-group select { width:100%; padding:0.8rem; border:1.5px solid #e5e7eb; border-radius:8px; font-size: 0.95rem; transition: border-color 0.2s; box-sizing: border-box; }
     .form-group input:focus, .form-group select:focus { outline:none; border-color:#d63384; box-shadow: 0 0 0 3px rgba(214,51,132,0.12); }
     .modal-actions { display:flex; justify-content:flex-end; gap:1rem; padding: 1rem 2rem 1.5rem; border-top: 1px solid #f3e6ef; }
-    .btn-cancel { padding:0.8rem 1.5rem; border:1px solid #e5e7eb; background:#f9fafb; border-radius:8px; cursor:pointer; font-weight:600; }
+    .btn-cancel { padding:0.8rem 1.5rem; border: 1px solid var(--border-color); background:#f9fafb; border-radius:8px; cursor:pointer; font-weight:600; }
 
     /* Cementerio badge */
     .cementerio-badge { display:flex; align-items:center; gap:0.5rem; background:#fff0f6; border:1px solid #f3c2d9; border-radius:10px; padding:0.75rem 1rem; margin-bottom:1rem; color:#d63384; font-size:0.9rem; }
@@ -786,12 +794,12 @@ import { AuthService } from '../../services/auth.service';
     /* Espacios grid */
     .espacios-section { margin-top: 1rem; border-top: 1px solid #f3e6ef; padding-top: 1rem; }
     .espacios-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; }
-    .espacios-header label { font-size:0.85rem; font-weight:700; color:#374151; }
+    .espacios-header label { font-size:0.85rem; font-weight:700; color: var(--text-main); }
     .leyenda { display:flex; gap:1rem; font-size:0.8rem; font-weight:600; }
     .leg.libre { color:#16a34a; }
     .leg.ocupado { color:#dc2626; }
     .loading-espacios { text-align:center; padding:1rem; color:#9ca3af; font-style:italic; }
-    .espacios-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(90px,1fr)); gap:0.5rem; max-height:220px; overflow-y:auto; padding:0.5rem; border:1px solid #e5e7eb; border-radius:10px; }
+    .espacios-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(90px,1fr)); gap:0.5rem; max-height:220px; overflow-y:auto; padding:0.5rem; border: 1px solid var(--border-color); border-radius:10px; }
     .espacio-btn { border-radius:8px; padding:0.5rem 0.3rem; text-align:center; cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; gap:2px; border:2px solid transparent; }
     .espacio-btn.libre { background:#f0fdf4; border-color:#86efac; }
     .espacio-btn.libre:hover { background:#dcfce7; border-color:#16a34a; transform:scale(1.05); }
@@ -811,21 +819,21 @@ import { AuthService } from '../../services/auth.service';
     .detalle-item .label { font-size:0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; }
     .detalle-item .value { font-size:1rem; font-weight:600; color:var(--text-main); }
     .detalle-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; background:#f9fafb; padding:1rem; border-radius:12px; }
-    .divider { border:none; border-top:1px solid #e5e7eb; margin:0.5rem 0; }
+    .divider { border:none; border-top: 1px solid var(--border-color); margin:0.5rem 0; }
     .value-list { margin:0; padding-left:1.2rem; font-size:0.95rem; font-weight:600; color:var(--text-main); }
     .uploaded-files { list-style:none; padding:0; margin-top:0.5rem; }
     .uploaded-files li { background:#f3f4f6; padding:0.5rem 0.8rem; border-radius:6px; font-size:0.85rem; margin-bottom:0.3rem; display:flex; align-items:center; gap:0.5rem; font-weight:600; }
     
     /* Cripta Grid */
     .cripta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 0.5rem; }
-    .cripta-slot { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.5rem; text-align: center; display: flex; flex-direction: column; gap: 4px; }
+    .cripta-slot { background: #f9fafb; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem; text-align: center; display: flex; flex-direction: column; gap: 4px; }
     .cripta-slot.ocupado { background: #fee2e2; border-color: #fca5a5; }
     .cripta-slot.libre { background: #f0fdf4; border-color: #86efac; }
-    .slot-num { font-size: 0.75rem; font-weight: 700; color: #6b7280; }
+    .slot-num { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
     .slot-status { font-size: 0.7rem; text-transform: uppercase; font-weight: 800; }
     .cripta-slot.ocupado .slot-status { color: #dc2626; }
     .cripta-slot.libre .slot-status { color: #16a34a; }
-    .slot-name { font-size: 0.75rem; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .slot-name { font-size: 0.75rem; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .alerta-publico { background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; padding: 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; }
     .alerta-privado { background: #fef9c3; border: 1px solid #fde047; color: #854d0e; padding: 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; }
@@ -835,8 +843,8 @@ import { AuthService } from '../../services/auth.service';
     .section-title { font-size: 1.1rem; color: #d63384; border-bottom: 2px solid #fce4f0; padding-bottom: 0.5rem; margin-top: 2rem; margin-bottom: 1rem; font-weight: 800; }
     .section-title:first-child { margin-top: 0; }
     .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-    .checkbox-group { margin: 1rem 0; padding: 1rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; }
-    .checkbox-group label { display: flex; align-items: center; gap: 0.8rem; font-size: 0.9rem; font-weight: 600; color: #374151; cursor: pointer; margin: 0; }
+    .checkbox-group { margin: 1rem 0; padding: 1rem; background: #f9fafb; border: 1px solid var(--border-color); border-radius: 8px; }
+    .checkbox-group label { display: flex; align-items: center; gap: 0.8rem; font-size: 0.9rem; font-weight: 600; color: var(--text-main); cursor: pointer; margin: 0; }
     .checkbox-group input[type="checkbox"] { width: 1.2rem; height: 1.2rem; cursor: pointer; accent-color: #d63384; }
     .btn-remove-doc { color: #ef4444; cursor: pointer; font-weight: bold; margin-left: auto; padding: 2px 8px; border-radius: 4px; }
     .btn-remove-doc:hover { background: #fee2e2; }
@@ -846,7 +854,7 @@ import { AuthService } from '../../services/auth.service';
     /* Selector Tipo Inhumación */
     .custom-tipo-selector { margin-bottom: 1.5rem; }
     .tipo-buttons { display: flex; gap: 1rem; }
-    .tipo-buttons button { flex: 1; padding: 1rem; background: #fff; border: 2px solid #f3e6ef; border-radius: 12px; font-weight: 700; color: #6b7280; cursor: pointer; transition: all 0.2s; }
+    .tipo-buttons button { flex: 1; padding: 1rem; background: var(--card-bg); border: 2px solid #f3e6ef; border-radius: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
     .tipo-buttons button:hover { border-color: #fce4f0; background: #fff0f6; }
     .tipo-buttons button.active { background: #d63384; color: white; border-color: #d63384; box-shadow: 0 4px 12px rgba(214, 51, 132, 0.3); transform: translateY(-2px); }
     .validaciones-caja { margin-top: 1rem; padding: 1rem; border: 2px dashed #fce4f0; border-radius: 12px; background: #fffafc; }
@@ -876,6 +884,11 @@ export class DifuntosComponent implements OnInit {
   difuntos: DifuntoDTO[] = [];
   filtro = '';
   filtroEstado = '';
+  filtroTipo = ''; // 'Privado', 'Público', 'Osario'
+
+  // Paginated List State
+  paginaActual = 1;
+  itemsPorPagina = 10;
 
   // Permisos y cementerio
   esAdmin = false;
@@ -1010,8 +1023,24 @@ export class DifuntosComponent implements OnInit {
                        (d.dui && d.dui.toLowerCase().includes(this.filtro.toLowerCase())) ||
                        d.ubicacion.toLowerCase().includes(this.filtro.toLowerCase());
       const matchEstado = this.filtroEstado ? d.estadoPago === this.filtroEstado : true;
-      return matchText && matchEstado;
+      const matchTipo = this.filtroTipo ? d.tipoCementerio === this.filtroTipo : true;
+      return matchText && matchEstado && matchTipo;
     });
+  }
+
+  get totalPaginas() {
+    return Math.max(1, Math.ceil(this.difuntosFiltrados.length / this.itemsPorPagina));
+  }
+
+  get difuntosPaginados() {
+    const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+    return this.difuntosFiltrados.slice(inicio, inicio + this.itemsPorPagina);
+  }
+
+  cambiarPagina(nuevaPagina: number) {
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPaginas) {
+      this.paginaActual = nuevaPagina;
+    }
   }
 
   get totalPendientes() {
@@ -1031,10 +1060,10 @@ export class DifuntosComponent implements OnInit {
       id: 0, nombre: '', dui: '', fechaFallecimiento: '', fechaNacimiento: '', fechaEntierro: '', 
       anosTranscurridos: 0, ubicacion: '', cementerioNombre: '', tipoCementerio: '', estadoPago: '',
       dueno: '', duenoDui: '', requiereRenovacion: false, espacioId: null as any, osarioId: null as any,
-      documentos: [], correlativo: '', edad: null as any, sexo: '', estadoCivil: '', causaMuerte: '',
-      domicilioFallecido: '', nombreResponsable: '', domicilioResponsable: '', celularResponsable: '',
+      documentos: [], correlativo: '', edad: '', sexo: '', estadoCivil: '', causaMuerte: '',
+      domicilioFallecido: '', nombreResponsable: '', domicilioResponsable: '', duiResponsable: '', celularResponsable: '',
       horaFallecimiento: '', horaEntierro: '', firmasAutorizadas: false, cruzNombreYFecha: false,
-      materialPlaca: '', medidasPlaca: ''
+      materialPlaca: '', medidasPlaca: '', tipoDocumentoDifunto: 'DUI'
     };
 
     // Si el usuario ya tiene cementerio asignado (no es admin), cargarlo automáticamente
@@ -1075,11 +1104,95 @@ export class DifuntosComponent implements OnInit {
     event.target.value = val;
   }
 
+  onDuiResponsableInput(event: any) {
+    let val = event.target.value.replace(/\D/g, '');
+    if (val.length > 9) val = val.substring(0, 9);
+    if (val.length > 8) {
+      val = val.substring(0, 8) + '-' + val.substring(8);
+    }
+    this.nuevoDifunto.duiResponsable = val;
+    event.target.value = val;
+  }
+
+  onTelefonoInput(event: any) {
+    let val = event.target.value.replace(/\D/g, '');
+    if (val.length > 8) val = val.substring(0, 8);
+    this.nuevoDifunto.celularResponsable = val;
+    event.target.value = val;
+  }
+
+  onTipoDocumentoChange() {
+    if (this.nuevoDifunto.tipoDocumentoDifunto === 'PARTIDA') {
+      this.nuevoDifunto.dui = '';
+    }
+  }
+
+  onPartidaSelected(event: any) {
+    const files: FileList = event.target.files;
+    if (!files || files.length === 0) return;
+    const file = files.item(0);
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const base64 = e.target.result.split(',')[1];
+      const idx = this.nuevoDifunto.documentos.findIndex((d: any) => d.nombre.startsWith('Partida_Nacimiento'));
+      if (idx !== -1) {
+        this.nuevoDifunto.documentos.splice(idx, 1);
+      }
+      this.nuevoDifunto.documentos.push({ nombre: 'Partida_Nacimiento_' + (this.nuevoDifunto.nombre ? this.nuevoDifunto.nombre.replace(/ /g, '_') : 'Difunto') + '_' + file.name, data: base64 });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  calcularEdad() {
+    if (this.nuevoDifunto.fechaNacimiento && this.nuevoDifunto.fechaFallecimiento) {
+      const nac = new Date(this.nuevoDifunto.fechaNacimiento + 'T00:00:00');
+      const fall = new Date(this.nuevoDifunto.fechaFallecimiento + 'T00:00:00');
+      if (fall < nac) {
+        this.nuevoDifunto.edad = '0 días';
+        return;
+      }
+      
+      let years = fall.getFullYear() - nac.getFullYear();
+      let months = fall.getMonth() - nac.getMonth();
+      let days = fall.getDate() - nac.getDate();
+      
+      if (days < 0) {
+        months--;
+        const previousMonth = new Date(fall.getFullYear(), fall.getMonth(), 0);
+        days += previousMonth.getDate();
+      }
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+      
+      if (years > 0) {
+        this.nuevoDifunto.edad = `${years} año${years > 1 ? 's' : ''}`;
+      } else if (months > 0) {
+        this.nuevoDifunto.edad = `${months} mes${months > 1 ? 'es' : ''}`;
+      } else {
+        this.nuevoDifunto.edad = `${days} día${days !== 1 ? 's' : ''}`;
+      }
+    } else {
+      this.nuevoDifunto.edad = '';
+    }
+  }
+
   setTipoInhumacion(tipo: 'cripta' | 'osario') {
     this.tipoInhumacionUI = tipo;
     // Reset selections
     this.nuevoDifunto.espacioId = null as any;
     this.nuevoDifunto.osarioId = null as any;
+    
+    // Autofill osario validation
+    if (tipo === 'osario') {
+      this.nuevoDifunto.materialPlaca = 'Aluminio';
+      this.nuevoDifunto.medidasPlaca = '25x10 cm';
+    } else {
+      this.nuevoDifunto.materialPlaca = '';
+      this.nuevoDifunto.medidasPlaca = '';
+    }
   }
 
   // --- Alertas Modal ---
@@ -1144,6 +1257,12 @@ export class DifuntosComponent implements OnInit {
   seleccionarEspacio(esp: any) {
     this.nuevoDifunto.espacioId = esp.id;
     this.espacioSeleccionadoLabel = esp.label;
+    
+    // Autofill strict validations if private
+    if (this.cementerioEsPrivado) {
+      this.nuevoDifunto.materialPlaca = 'Base de hierro con letras de bronce';
+      this.nuevoDifunto.medidasPlaca = '40x20 cm';
+    }
   }
 
   editar(d: DifuntoDTO) {
@@ -1170,8 +1289,8 @@ export class DifuntosComponent implements OnInit {
       celularResponsable: d.celularResponsable || '',
       firmasAutorizadas: d.firmasAutorizadas || false,
       cruzNombreYFecha: d.cruzNombreYFecha || false,
-      materialPlaca: d.materialPlaca || '',
-      medidasPlaca: d.medidasPlaca || ''
+      materialPlaca: 'Base de hierro con letras de bronce',
+      medidasPlaca: '40x20 cm'
     };
   }
 
@@ -1187,6 +1306,67 @@ export class DifuntosComponent implements OnInit {
   cerrarModalDetalles() {
     this.showModalDetalles = false;
     this.difuntoSeleccionado = null;
+  }
+
+  descargarPDF() {
+    if (!this.difuntoSeleccionado) return;
+    const d = this.difuntoSeleccionado;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(20);
+    doc.setTextColor(138, 31, 83); // #8a1f53
+    doc.text('Expediente de Difunto', 14, 22);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(50, 50, 50);
+    doc.text(`Nombre Completo: ${d.nombre}`, 14, 35);
+    doc.text(`DUI: ${d.dui || 'No registrado'}`, 14, 42);
+    doc.text(`Ubicación: ${d.cementerioNombre || 'Cementerio'} - ${d.ubicacion}`, 14, 49);
+    doc.text(`Propietario: ${d.dueno || 'Sin asignar'} ${d.duenoDui ? '('+d.duenoDui+')' : ''}`, 14, 56);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(138, 31, 83);
+    doc.text('Datos Biográficos', 14, 70);
+    doc.setFontSize(12);
+    doc.setTextColor(50, 50, 50);
+    doc.text(`Nacimiento: ${d.fechaNacimiento || 'No registrado'}`, 14, 78);
+    doc.text(`Fallecimiento: ${d.fechaFallecimiento || 'No registrado'} (${d.horaFallecimiento || 'No registrada'})`, 14, 85);
+    doc.text(`Edad al fallecer: ${d.edad ? d.edad + ' años' : 'No registrada'}`, 14, 92);
+    doc.text(`Causa de Muerte: ${d.causaMuerte || 'No registrada'}`, 14, 99);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(138, 31, 83);
+    doc.text('Inhumación y Responsable', 14, 115);
+    doc.setFontSize(12);
+    doc.setTextColor(50, 50, 50);
+    doc.text(`Fecha Entierro: ${d.fechaEntierro || 'No registrada'} (${d.horaEntierro || 'No registrada'})`, 14, 123);
+    doc.text(`Responsable: ${d.nombreResponsable || 'No registrado'}`, 14, 130);
+    doc.text(`Celular Responsable: ${d.celularResponsable || 'No registrado'}`, 14, 137);
+
+    if (this.pagosCargados && this.pagosCargados.length > 0) {
+      doc.setFontSize(14);
+      doc.setTextColor(138, 31, 83);
+      doc.text('Historial de Pagos Relacionados:', 14, 155);
+      
+      const body = this.pagosCargados.map(p => [
+        p.concepto,
+        p.fecha,
+        `$${p.monto}`,
+        p.estado
+      ]);
+      
+      autoTable(doc, {
+        startY: 160,
+        head: [['Concepto', 'Fecha', 'Monto', 'Estado']],
+        body: body,
+        headStyles: { fillColor: [214, 51, 132] }
+      });
+    } else {
+      doc.setFontSize(12);
+      doc.text('No posee historial de pagos.', 14, 155);
+    }
+    
+    doc.save(`Expediente_Difunto_${d.nombre.replace(/ /g, '_')}.pdf`);
   }
 
   eliminar(d: DifuntoDTO) {
@@ -1238,11 +1418,38 @@ export class DifuntosComponent implements OnInit {
       this.mostrarModalAlerta('error', 'Campos obligatorios', 'El nombre y la fecha de fallecimiento son obligatorios');
       return;
     }
+    
+    if (!this.nuevoDifunto.duiResponsable || this.nuevoDifunto.duiResponsable.trim() === '') {
+      this.mostrarModalAlerta('error', 'Campos obligatorios', 'El DUI del responsable es obligatorio');
+      return;
+    }
+    
+    if (!this.nuevoDifunto.celularResponsable || this.nuevoDifunto.celularResponsable.trim() === '') {
+      this.mostrarModalAlerta('error', 'Campos obligatorios', 'El celular del responsable es obligatorio');
+      return;
+    }
+    
+    if (!this.nuevoDifunto.firmasAutorizadas) {
+      this.mostrarModalAlerta('error', 'Firmas Requeridas', 'Debe confirmar que el Administrador y el Responsable han firmado la boleta física marcando la casilla correspondiente.');
+      return;
+    }
+    
+    if ((this.nuevoDifunto.tipoDocumentoDifunto === 'DUI' || !this.nuevoDifunto.tipoDocumentoDifunto) && (!this.nuevoDifunto.dui || this.nuevoDifunto.dui.trim() === '')) {
+      this.mostrarModalAlerta('error', 'Campos obligatorios', 'El DUI del difunto es obligatorio cuando es mayor de edad');
+      return;
+    }
 
     if (this.modoEdicion && this.difuntoActualId) {
       this.difuntoService.actualizarDifunto(this.difuntoActualId, this.nuevoDifunto as any).subscribe({
         next: () => { this.mostrarModalAlerta('exito', 'Éxito', 'Difunto actualizado correctamente!'); this.cerrarModal(); this.cargarDifuntos(); },
-        error: () => this.mostrarModalAlerta('error', 'Error', 'Error al actualizar')
+        error: (err) => {
+          console.error(err);
+          if (err.status === 403) {
+            this.mostrarModalAlerta('error', 'Sesión Expirada', 'Su sesión expiró o no tiene permisos. Por favor cierre sesión e ingrese nuevamente.');
+          } else {
+            this.mostrarModalAlerta('error', 'Error al actualizar', err.error?.message || err.error || err.message || 'Ocurrió un error inesperado');
+          }
+        }
       });
     } else {
       if (!this.nuevoDifunto.espacioId) {
@@ -1251,7 +1458,14 @@ export class DifuntosComponent implements OnInit {
       }
       this.difuntoService.registrarDifunto(this.nuevoDifunto as any).subscribe({
         next: () => { this.mostrarModalAlerta('exito', 'Éxito', '¡Difunto registrado y espacio ocupado!'); this.cerrarModal(); this.cargarDifuntos(); },
-        error: () => this.mostrarModalAlerta('error', 'Error', 'Error al registrar')
+        error: (err) => {
+          console.error(err);
+          if (err.status === 403) {
+            this.mostrarModalAlerta('error', 'Sesión Expirada', 'Su sesión expiró o no tiene permisos. Por favor cierre sesión e ingrese nuevamente.');
+          } else {
+            this.mostrarModalAlerta('error', 'Error de Validación', err.error?.message || err.error || err.message || 'Ocurrió un error inesperado');
+          }
+        }
       });
     }
   }

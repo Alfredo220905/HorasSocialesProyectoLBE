@@ -27,6 +27,7 @@ public class ClienteController {
     private final com.cementerio.service.DuiValidationService duiValidationService;
     private final UsuarioRepository usuarioRepository;
     private final com.cementerio.repository.CriptaRepository criptaRepository;
+    private final com.cementerio.repository.PagoRepository pagoRepository;
 
     @GetMapping
     public List<Cliente> listarClientes() {
@@ -102,10 +103,26 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public void eliminarCliente(@PathVariable Long id) {
         if (!clienteRepository.existsById(id)) {
             throw new RuntimeException("Cliente no encontrado");
         }
+
+        // Desvincular Criptas asociadas para evitar restricción de llave foránea
+        List<com.cementerio.entity.Cripta> criptas = criptaRepository.findByClienteId(id);
+        for(com.cementerio.entity.Cripta c : criptas) {
+            c.setCliente(null);
+            criptaRepository.save(c);
+        }
+
+        // Asegurar que se eliminen los pagos del cliente 
+        // (Hibernate debería hacerlo por Cascade, pero a veces falla si se cargó a medias)
+        List<com.cementerio.entity.Pago> pagos = pagoRepository.findByClienteId(id);
+        if(!pagos.isEmpty()){
+             pagoRepository.deleteAll(pagos);
+        }
+
         clienteRepository.deleteById(id);
     }
 

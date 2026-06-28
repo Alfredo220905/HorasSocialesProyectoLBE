@@ -92,11 +92,19 @@ import { HttpClient } from '@angular/common/http';
             <div class="table-card">
               <!-- VISTA PÚBLICA -->
               <div class="public-view" *ngIf="seccionSeleccionada.nombre !== 'PRIVADO'">
-                <div class="public-lote-selector" *ngIf="criptasPublicas.length > 0" style="margin-bottom: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 8px;">
-                  <label style="font-weight: 600; margin-right: 0.5rem; color: #374151;">Seleccionar Lote:</label>
-                  <select [(ngModel)]="selectedLotePublicoId" (change)="actualizarLotePublico()" style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #d1d5db; min-width: 250px;">
-                    <option *ngFor="let c of criptasPublicas" [value]="c.id">Fila {{ c.fila }} - Columna {{ c.columna }} ({{ c.espacios?.length || 0 }} espacios)</option>
-                  </select>
+                <div class="public-lote-selector" *ngIf="criptasPublicas.length > 0" style="margin-bottom: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 8px; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                  <div>
+                    <label style="font-weight: 600; margin-right: 0.5rem; color: var(--text-main);">Fila:</label>
+                    <select [(ngModel)]="selectedFilaPublica" (change)="actualizarColumnasPublicas()" style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid var(--border-color); min-width: 150px;">
+                      <option *ngFor="let f of filasPublicas" [ngValue]="f">Fila {{ f }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-weight: 600; margin-right: 0.5rem; color: var(--text-main);">Columna:</label>
+                    <select [(ngModel)]="selectedColumnaPublica" (change)="actualizarLotePublicoDesdeFilaColumna()" style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid var(--border-color); min-width: 150px;">
+                      <option *ngFor="let c of columnasPublicas" [ngValue]="c">Columna {{ c }}</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div class="table-responsive">
@@ -147,7 +155,7 @@ import { HttpClient } from '@angular/common/http';
                   <div class="lote-card accordion-card" *ngFor="let cr of criptasPaginadas">
                     <div class="lote-header" [class.vacant]="!cr.clienteObj" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 1.2rem;">
                       <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h4 style="margin: 0; color: #1e293b;">Lote F{{cr.fila}}-C{{cr.columna}}</h4>
+                        <h4 style="margin: 0; color: var(--text-main);">Lote F{{cr.fila}}-C{{cr.columna}}</h4>
                         <div>
                           <span class="lote-badge">{{ cr.espacios.length }} Espacios</span>
                           <span class="lote-badge" *ngIf="getEspaciosLibres(cr) > 0" style="background: #dcfce7; color: #16a34a; border-color: #86efac; margin-left: 0.5rem;">{{ getEspaciosLibres(cr) }} Disponibles</span>
@@ -165,39 +173,39 @@ import { HttpClient } from '@angular/common/http';
                         </div>
                       </div>
 
-                      <button class="btn-toggle-accordion" (click)="toggleLoteExpanded(cr)" style="margin-top: 1rem; width: 100%; padding: 0.5rem; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 0.5rem; color: #475569; font-weight: 500; transition: all 0.2s;">
+                      <button class="btn-toggle-accordion" (click)="toggleLoteExpanded(cr)" style="margin-top: 1rem; width: 100%; padding: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 0.5rem; color: var(--text-main); font-weight: 500; transition: all 0.2s;">
                         {{ cr.expanded ? 'Ocultar Espacios' : 'Ver Espacios (' + cr.espacios.length + ')' }}
                         <svg [style.transform]="cr.expanded ? 'rotate(180deg)' : 'rotate(0)'" style="transition: transform 0.3s;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                       </button>
                     </div>
                     
-                    <div class="lote-body" [class.expanded]="cr.expanded" style="display: none; padding: 0; border-top: 1px solid #e2e8f0;">
+                    <div class="lote-body" *ngIf="cr.expanded" style="padding: 0; border-top: 1px solid var(--border-color);">
                       <div class="table-responsive" style="margin: 0; border: none; box-shadow: none;">
-                        <table style="margin: 0;">
+                        <table style="margin: 0; width: 100%; border-collapse: collapse;">
                           <thead>
                             <tr>
-                              <th>Espacio</th>
-                              <th>Estado</th>
-                              <th>Difunto</th>
-                              <th>DUI</th>
-                              <th>Acciones</th>
+                              <th style="padding: 1rem; text-align: left; background: var(--table-header-bg); font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted);">Espacio</th>
+                              <th style="padding: 1rem; text-align: left; background: var(--table-header-bg); font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted);">Estado</th>
+                              <th style="padding: 1rem; text-align: left; background: var(--table-header-bg); font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted);">Difunto</th>
+                              <th style="padding: 1rem; text-align: left; background: var(--table-header-bg); font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted);">DUI</th>
+                              <th style="padding: 1rem; text-align: left; background: var(--table-header-bg); font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted);">Acciones</th>
                             </tr>
                           </thead>
                           <tbody>
-                            <tr *ngFor="let esp of cr.espacios">
-                              <td class="col-espacio" style="font-weight: 600; color: #d73387;">Nº {{ esp.numero }}</td>
-                              <td>
+                            <tr *ngFor="let esp of cr.espacios" style="border-bottom: 1px solid var(--border-color);">
+                              <td class="col-espacio" style="padding: 1rem; font-weight: 600; color: #d73387;">Nº {{ esp.numero }}</td>
+                              <td style="padding: 1rem;">
                                 <span class="status-badge" [ngClass]="(esp.estado || 'DISPONIBLE').toLowerCase()">
                                   {{ esp.estado || 'DISPONIBLE' }}
                                 </span>
                               </td>
-                              <td class="col-difunto" [class.empty-text]="!esp.difuntoObj">{{ esp.difunto || '-- Vacío --' }}</td>
-                              <td>{{ esp.difuntoObj?.dui || '--' }}</td>
-                              <td>
-                                <div class="action-buttons">
-                                  <button class="btn-xs btn-outline-pink" (click)="abrirModalVerDatos('difunto', esp.difuntoObj)" *ngIf="esp.difuntoObj">Ver</button>
-                                  <button class="btn-xs btn-outline-pink" (click)="editarEspacio(esp)">Editar</button>
-                                  <button class="btn-xs btn-outline-red" (click)="liberarEspacio(esp)" *ngIf="esp.difuntoObj">✕</button>
+                              <td class="col-difunto" [class.empty-text]="!esp.difuntoObj" style="padding: 1rem;">{{ esp.difunto || '-- Vacío --' }}</td>
+                              <td style="padding: 1rem;">{{ esp.difuntoObj?.dui || '--' }}</td>
+                              <td style="padding: 1rem;">
+                                <div class="action-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                  <button class="btn-xs btn-outline-pink" (click)="abrirModalVerDatos('difunto', esp.difuntoObj)" *ngIf="esp.difuntoObj">Ver Expediente</button>
+                                  <button class="btn-xs btn-outline-pink" (click)="editarEspacio(esp)">Editar Datos</button>
+                                  <button class="btn-xs btn-outline-red" (click)="liberarEspacio(esp)" *ngIf="esp.difuntoObj">Liberar Espacio</button>
                                 </div>
                               </td>
                             </tr>
@@ -286,7 +294,7 @@ import { HttpClient } from '@angular/common/http';
 
             <div class="form-group" style="margin-top: 1rem;">
               <label>Subir Documento PDF/Imagen</label>
-              <input type="file" (change)="onPropFileSelected($event)" accept=".pdf,image/*" style="display: block; width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.8rem; font-family: inherit; font-size: 0.9rem;">
+              <input type="file" (change)="onPropFileSelected($event)" accept=".pdf,image/*" style="display: block; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.8rem; font-family: inherit; font-size: 0.9rem;">
               <p *ngIf="propFile.file" style="margin-top: 0.5rem; font-size: 0.85rem; color: #10b981;">Archivo seleccionado: {{ $any(propFile.file).name }}</p>
             </div>
           </div>
@@ -303,7 +311,7 @@ import { HttpClient } from '@angular/common/http';
       </div>
 
       <!-- MODAL GENÉRICO -->
-      <div class="modal-overlay" *ngIf="modal.visible" (click)="cerrarModal()">
+      <div class="modal-overlay" *ngIf="modal.visible" (click)="cerrarModal()" [ngStyle]="{'z-index': '99999'}">
         <div class="modal-box" (click)="$event.stopPropagation()"
              [class.modal-error]="modal.tipo === 'error'"
              [class.modal-exito]="modal.tipo === 'exito'"
@@ -334,24 +342,38 @@ import { HttpClient } from '@angular/common/http';
           
           <div class="edit-form" style="max-height: 65vh; overflow-y: auto; padding-right: 10px;">
             <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 0.5rem;">Datos Personales del Difunto</h4>
-            <div class="mp-row-2" style="margin-bottom: 1rem;">
+            <div class="mp-row-1" style="margin-bottom: 1rem;">
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Nombre completo *</label>
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Nombre completo *</label>
                 <input type="text" [(ngModel)]="editModal.nombre" placeholder="Nombre del difunto" class="edit-input">
-              </div>
-              <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">DUI</label>
-                <input type="text" [(ngModel)]="editModal.dui" placeholder="Ej: 01234567-8" class="edit-input" [disabled]="true" style="background: #f1f5f9;">
               </div>
             </div>
             
             <div class="mp-row-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Edad</label>
-                <input type="number" [(ngModel)]="editModal.edad" class="edit-input" placeholder="Edad">
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Identificación *</label>
+                <select [(ngModel)]="editModal.tipoDocumentoDifunto" (change)="onTipoDocumentoChange()" class="edit-input" style="width: 100%;">
+                  <option value="DUI">DUI (Mayor)</option>
+                  <option value="PARTIDA">Partida de Nacimiento (Menor)</option>
+                </select>
+              </div>
+              <div class="form-group" style="grid-column: span 2;" *ngIf="editModal.tipoDocumentoDifunto === 'DUI' || !editModal.tipoDocumentoDifunto">
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">DUI *</label>
+                <input type="text" [(ngModel)]="editModal.dui" (input)="onDuiInput($event)" maxlength="10" placeholder="Ej: 01234567-8" class="edit-input">
+              </div>
+              <div class="form-group" style="grid-column: span 2;" *ngIf="editModal.tipoDocumentoDifunto === 'PARTIDA'">
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Partida de Nacimiento (PDF/Img) *</label>
+                <input type="file" (change)="onPartidaSelected($event)" accept=".pdf,.doc,.docx,.jpg,.png" class="edit-input">
+              </div>
+            </div>
+            
+            <div class="mp-row-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+              <div class="form-group">
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Edad Calculada</label>
+                <input type="text" [(ngModel)]="editModal.edad" class="edit-input" placeholder="Automática" readonly style="background-color: var(--card-bg); cursor: not-allowed;">
               </div>
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Sexo</label>
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Sexo</label>
                 <select [(ngModel)]="editModal.sexo" class="edit-input" style="width: 100%;">
                   <option value="">Seleccione</option>
                   <option value="MASCULINO">Masculino</option>
@@ -359,7 +381,7 @@ import { HttpClient } from '@angular/common/http';
                 </select>
               </div>
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Estado Civil</label>
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Estado Civil</label>
                 <select [(ngModel)]="editModal.estadoCivil" class="edit-input" style="width: 100%;">
                   <option value="">Seleccione</option>
                   <option value="SOLTERO(A)">Soltero(a)</option>
@@ -372,49 +394,55 @@ import { HttpClient } from '@angular/common/http';
             </div>
 
             <div class="form-group" style="margin-bottom: 2rem;">
-              <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Domicilio del Fallecido</label>
+              <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Domicilio del Fallecido</label>
               <input type="text" [(ngModel)]="editModal.domicilioFallecido" class="edit-input" placeholder="Dirección completa">
             </div>
 
             <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 0.5rem;">Datos Médicos y Fallecimiento</h4>
             <div class="mp-row-2" style="margin-bottom: 1rem;">
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Fecha de Fallecimiento *</label>
-                <input type="date" [(ngModel)]="editModal.fechaFallecimiento" class="edit-input">
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Fecha de Fallecimiento *</label>
+                <input type="date" [(ngModel)]="editModal.fechaFallecimiento" class="edit-input" (change)="calcularEdad()">
               </div>
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Hora de Fallecimiento</label>
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Hora de Fallecimiento</label>
                 <input type="time" [(ngModel)]="editModal.horaFallecimiento" class="edit-input">
               </div>
             </div>
             <div class="mp-row-2" style="margin-bottom: 2rem;">
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Causa de la muerte</label>
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Causa de la muerte</label>
                 <input type="text" [(ngModel)]="editModal.causaMuerte" class="edit-input" placeholder="Causa según dictamen médico">
               </div>
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Fecha de Nacimiento</label>
-                <input type="date" [(ngModel)]="editModal.fechaNacimiento" class="edit-input">
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Fecha de Nacimiento</label>
+                <input type="date" [(ngModel)]="editModal.fechaNacimiento" class="edit-input" (change)="calcularEdad()">
               </div>
             </div>
 
             <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 0.5rem;">Datos del Responsable</h4>
             <div class="mp-row-2" style="margin-bottom: 1rem;">
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Nombre del Responsable</label>
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Nombre del Responsable</label>
                 <input type="text" [(ngModel)]="editModal.nombreResponsable" class="edit-input" placeholder="Responsable del entierro">
               </div>
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Celular</label>
-                <input type="text" [(ngModel)]="editModal.celularResponsable" class="edit-input" placeholder="Teléfono de contacto">
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">DUI Responsable *</label>
+                <input type="text" [(ngModel)]="editModal.duiResponsable" (input)="onDuiResponsableInput($event)" maxlength="10" class="edit-input" placeholder="Ej: 01234567-8">
               </div>
             </div>
-            <div class="form-group" style="margin-bottom: 1rem;">
-              <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Domicilio del Responsable</label>
-              <input type="text" [(ngModel)]="editModal.domicilioResponsable" class="edit-input" placeholder="Dirección del responsable">
+            <div class="mp-row-2" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Celular *</label>
+                <input type="text" [(ngModel)]="editModal.celularResponsable" (input)="onTelefonoInput($event)" maxlength="8" class="edit-input" placeholder="Ej: 77777777">
+              </div>
+              <div class="form-group">
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Domicilio del Responsable</label>
+                <input type="text" [(ngModel)]="editModal.domicilioResponsable" class="edit-input" placeholder="Dirección del responsable">
+              </div>
             </div>
             <div class="form-group" style="margin-bottom: 2rem;">
-              <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 500; color: #475569; cursor: pointer;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 500; color: var(--text-main); cursor: pointer;">
                 <input type="checkbox" [(ngModel)]="editModal.firmasAutorizadas" style="width: 18px; height: 18px; cursor: pointer;"> 
                 Confirmo que el Administrador y el Responsable han firmado la boleta física.
               </label>
@@ -423,32 +451,22 @@ import { HttpClient } from '@angular/common/http';
             <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 0.5rem;">Ubicación e Inhumación</h4>
             <div class="mp-row-2" style="margin-bottom: 1rem;">
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Fecha de Entierro</label>
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Fecha de Entierro</label>
                 <input type="date" [(ngModel)]="editModal.fechaEntierro" class="edit-input">
               </div>
               <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Hora de Entierro</label>
+                <label style="font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Hora de Entierro</label>
                 <input type="time" [(ngModel)]="editModal.horaEntierro" class="edit-input">
-              </div>
-            </div>
-            <div class="mp-row-2" style="margin-bottom: 2rem;">
-              <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Material Placa</label>
-                <input type="text" [(ngModel)]="editModal.materialPlaca" class="edit-input">
-              </div>
-              <div class="form-group">
-                <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Medidas Placa</label>
-                <input type="text" [(ngModel)]="editModal.medidasPlaca" class="edit-input">
               </div>
             </div>
 
             <h4 style="margin-bottom: 1rem; color: #d63384; font-size: 1rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 0.5rem;">Documentación Adjunta</h4>
             <div class="form-group" style="margin-bottom: 1.5rem;">
-              <label style="font-weight: 600; color: #475569; display: block; margin-bottom: 0.4rem;">Boleta, DICTAMEN o Certificados (PDF/Word)</label>
-              <input type="file" (change)="onEditDifuntoFileSelectedMulti($event)" multiple accept=".pdf,.doc,.docx,image/*" style="display: block; width: 100%; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 1.5rem; background: #f8fafc; font-family: inherit; font-size: 0.9rem; text-align: center; cursor: pointer;">
+              <label style="font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Boleta, DICTAMEN o Certificados (PDF/Word)</label>
+              <input type="file" (change)="onEditDifuntoFileSelectedMulti($event)" multiple accept=".pdf,.doc,.docx,image/*" style="display: block; width: 100%; border: 1px dashed var(--text-muted); border-radius: 8px; padding: 1.5rem; background: var(--table-header-bg); font-family: inherit; font-size: 0.9rem; text-align: center; cursor: pointer; color: var(--text-main);">
               
               <ul style="list-style: none; padding: 0; margin-top: 1rem;" *ngIf="editModal.documentos && editModal.documentos.length">
-                <li *ngFor="let doc of editModal.documentos; let i = index" style="background: #f3f4f6; padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 0.3rem; display: flex; align-items: center; justify-content: space-between;">
+                <li *ngFor="let doc of editModal.documentos; let i = index" style="background: var(--hover-bg); padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 0.3rem; display: flex; align-items: center; justify-content: space-between;">
                   <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
                     <svg style="margin-right:4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     <span>{{ doc.nombre }}</span>
@@ -526,7 +544,7 @@ import { HttpClient } from '@angular/common/http';
             </div>
 
             <hr class="divider" *ngIf="modalVerDatos.tipo === 'difunto'">
-            <h3 *ngIf="modalVerDatos.tipo === 'difunto'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Datos Personales</h3>
+            <h3 *ngIf="modalVerDatos.tipo === 'difunto'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-main); font-size: 1rem;">Datos Personales</h3>
             <div class="detalle-grid" *ngIf="modalVerDatos.tipo === 'difunto'">
               <div class="detalle-item">
                 <span class="label">Fecha Nacimiento:</span>
@@ -551,7 +569,7 @@ import { HttpClient } from '@angular/common/http';
             </div>
 
             <hr class="divider" *ngIf="modalVerDatos.tipo === 'difunto'">
-            <h3 *ngIf="modalVerDatos.tipo === 'difunto'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Responsable</h3>
+            <h3 *ngIf="modalVerDatos.tipo === 'difunto'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-main); font-size: 1rem;">Responsable</h3>
             <div class="detalle-grid" *ngIf="modalVerDatos.tipo === 'difunto'">
               <div class="detalle-item">
                 <span class="label">Nombre Responsable:</span>
@@ -571,18 +589,6 @@ import { HttpClient } from '@angular/common/http';
               </div>
             </div>
             
-            <hr class="divider" *ngIf="modalVerDatos.tipo === 'difunto'">
-            <h3 *ngIf="modalVerDatos.tipo === 'difunto'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Placa y Material</h3>
-            <div class="detalle-grid" *ngIf="modalVerDatos.tipo === 'difunto'">
-              <div class="detalle-item">
-                <span class="label">Material Placa:</span>
-                <span class="value">{{ modalVerDatos.datos.materialPlaca || 'N/A' }}</span>
-              </div>
-              <div class="detalle-item">
-                <span class="label">Medidas Placa:</span>
-                <span class="value">{{ modalVerDatos.datos.medidasPlaca || 'N/A' }}</span>
-              </div>
-            </div>
 
             <hr class="divider" *ngIf="modalVerDatos.documentosCargados && modalVerDatos.documentosCargados.length > 0">
             <div class="detalle-item" *ngIf="modalVerDatos.documentosCargados && modalVerDatos.documentosCargados.length > 0">
@@ -618,17 +624,17 @@ import { HttpClient } from '@angular/common/http';
                 </span>
               </div>
               
-              <div *ngIf="!modalVerDatos.pagosCargados || modalVerDatos.pagosCargados.length === 0" style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 1rem 0; background: #f9fafb; border-radius: 8px;">
+              <div *ngIf="!modalVerDatos.pagosCargados || modalVerDatos.pagosCargados.length === 0" style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0; background: #f9fafb; border-radius: 8px;">
                 No hay pagos registrados
               </div>
 
-              <div *ngFor="let pago of modalVerDatos.pagosCargados" style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #e5e7eb; padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 0.5rem;">
+              <div *ngFor="let pago of modalVerDatos.pagosCargados" style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border-color); padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 0.5rem;">
                 <div style="display: flex; flex-direction: column; gap: 0.2rem;">
-                  <strong style="color: #374151; font-size: 0.95rem;">{{ pago.concepto }}</strong>
-                  <span style="color: #6b7280; font-size: 0.8rem;">{{ pago.fecha }}</span>
+                  <strong style="color: var(--text-main); font-size: 0.95rem;">{{ pago.concepto }}</strong>
+                  <span style="color: var(--text-muted); font-size: 0.8rem;">{{ pago.fecha }}</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                  <span style="font-family: monospace; font-weight: bold; color: #111827; font-size: 1.1rem;">$ {{ pago.monto }}</span>
+                  <span style="font-family: monospace; font-weight: bold; color: var(--text-main); font-size: 1.1rem;">$ {{ pago.monto }}</span>
                   <span class="status-badge" [ngStyle]="{'background': pago.estado === 'PAGADO' ? '#dcfce7' : '#fee2e2', 'color': pago.estado === 'PAGADO' ? '#16a34a' : '#ef4444'}" style="padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">
                     {{ pago.estado }}
                   </span>
@@ -679,6 +685,10 @@ export class DetalleCementerioComponent implements OnInit {
   terminoBusqueda: string = '';
   criptasPublicas: any[] = [];
   selectedLotePublicoId: number | null = null;
+  filasPublicas: number[] = [];
+  columnasPublicas: number[] = [];
+  selectedFilaPublica: number | null = null;
+  selectedColumnaPublica: number | null = null;
   espaciosAplanados: any[] = [];
   espaciosFiltrados: any[] = [];
 
@@ -726,14 +736,16 @@ export class DetalleCementerioComponent implements OnInit {
     fechaNacimiento: '',
     fechaFallecimiento: '',
     fechaEntierro: '',
-    edad: null as number | null,
+    edad: '',
     sexo: '',
     estadoCivil: '',
     causaMuerte: '',
     domicilioFallecido: '',
     nombreResponsable: '',
+    duiResponsable: '',
     domicilioResponsable: '',
     celularResponsable: '',
+    tipoDocumentoDifunto: 'DUI',
     firmasAutorizadas: false,
     horaFallecimiento: '',
     horaEntierro: '',
@@ -836,19 +848,40 @@ export class DetalleCementerioComponent implements OnInit {
       this.agruparCriptas();
     } else {
       this.criptasPublicas = par.criptas || [];
-      // Ordenar lotes por fila y columna para el select
-      this.criptasPublicas.sort((a, b) => {
-        if (a.fila !== b.fila) return a.fila - b.fila;
-        return a.columna - b.columna;
-      });
+      this.filasPublicas = [...new Set(this.criptasPublicas.map((c: any) => c.fila))].sort((a: any, b: any) => a - b);
       
-      if (this.criptasPublicas.length > 0) {
-        this.selectedLotePublicoId = this.criptasPublicas[0].id;
+      if (this.filasPublicas.length > 0) {
+        this.selectedFilaPublica = this.filasPublicas[0];
       } else {
-        this.selectedLotePublicoId = null;
+        this.selectedFilaPublica = null;
       }
-      this.actualizarLotePublico();
+      this.actualizarColumnasPublicas();
     }
+  }
+
+  actualizarColumnasPublicas() {
+    if (this.selectedFilaPublica !== null) {
+      this.columnasPublicas = [...new Set(this.criptasPublicas.filter((c: any) => c.fila === this.selectedFilaPublica).map((c: any) => c.columna))].sort((a: any, b: any) => a - b);
+      if (this.columnasPublicas.length > 0) {
+        this.selectedColumnaPublica = this.columnasPublicas[0];
+      } else {
+        this.selectedColumnaPublica = null;
+      }
+    } else {
+      this.columnasPublicas = [];
+      this.selectedColumnaPublica = null;
+    }
+    this.actualizarLotePublicoDesdeFilaColumna();
+  }
+
+  actualizarLotePublicoDesdeFilaColumna() {
+    if (this.selectedFilaPublica !== null && this.selectedColumnaPublica !== null) {
+      const lote = this.criptasPublicas.find((c: any) => c.fila == this.selectedFilaPublica && c.columna == this.selectedColumnaPublica);
+      this.selectedLotePublicoId = lote ? lote.id : null;
+    } else {
+      this.selectedLotePublicoId = null;
+    }
+    this.actualizarLotePublico();
   }
 
   actualizarLotePublico() {
@@ -1356,13 +1389,15 @@ export class DetalleCementerioComponent implements OnInit {
       causaMuerte: esp.difuntoObj?.causaMuerte || '',
       domicilioFallecido: esp.difuntoObj?.domicilioFallecido || '',
       nombreResponsable: esp.difuntoObj?.nombreResponsable || '',
+      duiResponsable: esp.difuntoObj?.duiResponsable || '',
       domicilioResponsable: esp.difuntoObj?.domicilioResponsable || '',
       celularResponsable: esp.difuntoObj?.celularResponsable || '',
       firmasAutorizadas: esp.difuntoObj?.firmasAutorizadas || false,
       horaFallecimiento: esp.difuntoObj?.horaFallecimiento || '',
       horaEntierro: esp.difuntoObj?.horaEntierro || '',
-      materialPlaca: esp.difuntoObj?.materialPlaca || '',
-      medidasPlaca: esp.difuntoObj?.medidasPlaca || '',
+      materialPlaca: 'Base de hierro con letras de bronce',
+      medidasPlaca: '40x20 cm',
+      tipoDocumentoDifunto: esp.difuntoObj?.tipoDocumentoDifunto || 'DUI',
       documentos: documentosArray,
       difuntoObj: esp.difuntoObj
     };
@@ -1385,7 +1420,108 @@ export class DetalleCementerioComponent implements OnInit {
     }
   }
 
+  onTipoDocumentoChange() {
+    if (this.editModal.tipoDocumentoDifunto === 'PARTIDA') {
+      this.editModal.dui = '';
+    }
+  }
+
+  onPartidaSelected(event: any) {
+    const files: FileList = event.target.files;
+    if (!files || files.length === 0) return;
+    const file = files.item(0);
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const base64 = e.target.result.split(',')[1];
+      const idx = this.editModal.documentos.findIndex((d: any) => d.nombre.startsWith('Partida_Nacimiento'));
+      if (idx !== -1) {
+        this.editModal.documentos.splice(idx, 1);
+      }
+      this.editModal.documentos.push({ nombre: 'Partida_Nacimiento_' + (this.editModal.nombre ? this.editModal.nombre.replace(/ /g, '_') : 'Difunto') + '_' + file.name, data: base64 });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  onDuiInput(event: any) {
+    let val = event.target.value.replace(/\D/g, '');
+    if (val.length > 9) val = val.substring(0, 9);
+    if (val.length > 8) val = val.substring(0, 8) + '-' + val.substring(8);
+    this.editModal.dui = val;
+    event.target.value = val;
+  }
+
+  onDuiResponsableInput(event: any) {
+    let val = event.target.value.replace(/\D/g, '');
+    if (val.length > 9) val = val.substring(0, 9);
+    if (val.length > 8) val = val.substring(0, 8) + '-' + val.substring(8);
+    this.editModal.duiResponsable = val;
+    event.target.value = val;
+  }
+
+  onTelefonoInput(event: any) {
+    let val = event.target.value.replace(/\D/g, '');
+    if (val.length > 8) val = val.substring(0, 8);
+    this.editModal.celularResponsable = val;
+    event.target.value = val;
+  }
+
+  calcularEdad() {
+    if (this.editModal.fechaNacimiento && this.editModal.fechaFallecimiento) {
+      const nac = new Date(this.editModal.fechaNacimiento + 'T00:00:00');
+      const fall = new Date(this.editModal.fechaFallecimiento + 'T00:00:00');
+      if (fall < nac) {
+        this.editModal.edad = '0 días';
+        return;
+      }
+      
+      let years = fall.getFullYear() - nac.getFullYear();
+      let months = fall.getMonth() - nac.getMonth();
+      let days = fall.getDate() - nac.getDate();
+      
+      if (days < 0) {
+        months--;
+        const previousMonth = new Date(fall.getFullYear(), fall.getMonth(), 0);
+        days += previousMonth.getDate();
+      }
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+      
+      if (years > 0) {
+        this.editModal.edad = `${years} año${years > 1 ? 's' : ''}`;
+      } else if (months > 0) {
+        this.editModal.edad = `${months} mes${months > 1 ? 'es' : ''}`;
+      } else {
+        this.editModal.edad = `${days} día${days !== 1 ? 's' : ''}`;
+      }
+    } else {
+      this.editModal.edad = '';
+    }
+  }
+
   guardarEdicion() {
+    if (!this.editModal.nombre || !this.editModal.fechaFallecimiento) {
+      this.mostrarModal('error', 'Campos obligatorios', 'El nombre y la fecha de fallecimiento son obligatorios.');
+      return;
+    }
+    
+    if (!this.editModal.duiResponsable || this.editModal.duiResponsable.trim() === '') {
+      this.mostrarModal('error', 'Campos obligatorios', 'El DUI del responsable es obligatorio.');
+      return;
+    }
+    
+    if (!this.editModal.celularResponsable || this.editModal.celularResponsable.trim() === '') {
+      this.mostrarModal('error', 'Campos obligatorios', 'El celular del responsable es obligatorio.');
+      return;
+    }
+    
+    if ((this.editModal.tipoDocumentoDifunto === 'DUI' || !this.editModal.tipoDocumentoDifunto) && (!this.editModal.dui || this.editModal.dui.trim() === '')) {
+      this.mostrarModal('error', 'Campos obligatorios', 'El DUI del difunto es obligatorio cuando es mayor de edad.');
+      return;
+    }
+
     const payload = {
       nombre: this.editModal.nombre,
       dui: this.editModal.dui || null,
@@ -1397,12 +1533,14 @@ export class DetalleCementerioComponent implements OnInit {
       estadoCivil: this.editModal.estadoCivil || null,
       causaMuerte: this.editModal.causaMuerte || null,
       domicilioFallecido: this.editModal.domicilioFallecido || null,
+      tipoDocumentoDifunto: this.editModal.tipoDocumentoDifunto || 'DUI',
       nombreResponsable: this.editModal.nombreResponsable || null,
+      duiResponsable: this.editModal.duiResponsable || null,
       domicilioResponsable: this.editModal.domicilioResponsable || null,
       celularResponsable: this.editModal.celularResponsable || null,
       firmasAutorizadas: this.editModal.firmasAutorizadas || false,
-      horaFallecimiento: this.editModal.horaFallecimiento ? this.editModal.horaFallecimiento + ":00" : null,
-      horaEntierro: this.editModal.horaEntierro ? this.editModal.horaEntierro + ":00" : null,
+      horaFallecimiento: this.editModal.horaFallecimiento ? (this.editModal.horaFallecimiento.length === 5 ? this.editModal.horaFallecimiento + ":00" : this.editModal.horaFallecimiento) : null,
+      horaEntierro: this.editModal.horaEntierro ? (this.editModal.horaEntierro.length === 5 ? this.editModal.horaEntierro + ":00" : this.editModal.horaEntierro) : null,
       materialPlaca: this.editModal.materialPlaca || null,
       medidasPlaca: this.editModal.medidasPlaca || null,
       documentosJson: (this.editModal.documentos && this.editModal.documentos.length > 0) ? JSON.stringify(this.editModal.documentos) : null
@@ -1412,10 +1550,21 @@ export class DetalleCementerioComponent implements OnInit {
         this.finalizarEditarEspacio();
       },
       error: (err) => {
+        console.error('Error del backend:', err);
+        let errorMsg = 'Error al actualizar el espacio. Por favor, intente de nuevo.';
+        
+        if (err.status === 403) {
+          errorMsg = 'Error de Seguridad: Su sesión ha expirado o no tiene permisos suficientes. Por favor cierre sesión y vuelva a ingresar.';
+        } else if (err.error && typeof err.error === 'string') {
+          errorMsg = err.error;
+        } else if (err.error?.message) {
+          errorMsg = err.error.message;
+        }
+
         if (err.error?.error === 'DUI_DUPLICADO' || err.error?.message === 'DUI_DUPLICADO' || (err.error && typeof err.error === 'string' && err.error.includes('DUI_DUPLICADO'))) {
           this.mostrarModal('error', 'DUI Duplicado', 'Atención: El DUI ingresado ya se encuentra registrado en el sistema.');
         } else {
-          this.mostrarModal('error', 'Error', 'Error al actualizar el espacio.');
+          this.mostrarModal('error', 'Error', errorMsg);
         }
       }
     });

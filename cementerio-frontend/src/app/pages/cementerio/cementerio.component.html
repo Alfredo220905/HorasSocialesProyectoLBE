@@ -28,7 +28,7 @@
 
 <!-- Alerta Genérica Modal -->
 <div class="modal-overlay" *ngIf="alertaModal.visible" style="z-index: 2000;">
-  <div class="modal-content modal-sm" style="background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); margin: auto;">
+  <div class="modal-content modal-sm" style="background: var(--card-bg); padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); margin: auto;">
     <div class="modal-header" [ngClass]="alertaModal.tipo">
       <h2 [style.color]="alertaModal.tipo === 'error' ? '#dc2626' : '#16a34a'">{{ alertaModal.titulo }}</h2>
     </div>

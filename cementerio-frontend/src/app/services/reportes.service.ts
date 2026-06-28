@@ -11,11 +11,15 @@ export class ReportesService {
 
   constructor(private http: HttpClient) { }
 
-  descargarExcelOcupacion() {
-    return this.http.get(`${this.apiUrl}/ocupacion/excel`, { responseType: 'blob' });
+  descargarExcelOcupacion(cementerioId?: number | null) {
+    let url = `${this.apiUrl}/ocupacion/excel`;
+    if (cementerioId) url += `?cementerioId=${cementerioId}`;
+    return this.http.get(url, { responseType: 'blob' });
   }
 
-  descargarPdfOcupacion() {
-    return this.http.get(`${this.apiUrl}/ocupacion/pdf`, { responseType: 'blob' });
+  descargarPdfOcupacion(cementerioId?: number | null) {
+    let url = `${this.apiUrl}/ocupacion/pdf`;
+    if (cementerioId) url += `?cementerioId=${cementerioId}`;
+    return this.http.get(url, { responseType: 'blob' });
   }
 }

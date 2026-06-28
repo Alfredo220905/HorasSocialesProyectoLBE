@@ -26,6 +26,10 @@ public class CementerioServiceImpl implements CementerioService {
     @Override
     public Cementerio crearCementerio(String nombre, boolean tienePrivado) {
         System.out.println("Iniciando creación de cementerio: " + nombre);
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del cementerio es obligatorio");
+        }
+        
         try {
             Cementerio cementerio = new Cementerio();
             cementerio.setNombre(nombre);
@@ -68,10 +72,17 @@ public class CementerioServiceImpl implements CementerioService {
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void eliminarCementerio(Long id) {
-        if (!cementerioRepository.existsById(id)) {
-            throw new RuntimeException("Cementerio no encontrado con ID: " + id);
+        Cementerio cementerio = cementerioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cementerio no encontrado con ID: " + id));
+
+        // Desvincular usuarios
+        List<Usuario> usuarios = usuarioRepository.findByCementerioId(id);
+        for (Usuario u : usuarios) {
+            u.setCementerio(null);
+            usuarioRepository.save(u);
         }
-        cementerioRepository.deleteById(id);
+
+        cementerioRepository.delete(cementerio);
     }
 
     @Override
@@ -147,7 +158,24 @@ public class CementerioServiceImpl implements CementerioService {
             espacio.setEstado(EstadoEspacio.OCUPADO);
         }
         
-        duiValidationService.validarDuiUnico(datosDifunto.getDui(), "DIFUNTO", difunto.getId());
+        if (datosDifunto.getDuiResponsable() == null || datosDifunto.getDuiResponsable().trim().isEmpty()) {
+            throw new RuntimeException("El DUI del responsable es obligatorio.");
+        }
+        
+        if (datosDifunto.getCelularResponsable() == null || datosDifunto.getCelularResponsable().trim().isEmpty()) {
+            throw new RuntimeException("El celular del responsable es obligatorio.");
+        }
+        
+        if (datosDifunto.getTipoDocumentoDifunto() == null || datosDifunto.getTipoDocumentoDifunto().trim().isEmpty()) {
+            datosDifunto.setTipoDocumentoDifunto("DUI");
+        }
+        
+        if ("DUI".equalsIgnoreCase(datosDifunto.getTipoDocumentoDifunto())) {
+            if (datosDifunto.getDui() == null || datosDifunto.getDui().trim().isEmpty()) {
+                throw new RuntimeException("El DUI del difunto es obligatorio cuando es mayor de edad.");
+            }
+            duiValidationService.validarDuiUnico(datosDifunto.getDui(), "DIFUNTO", difunto.getId());
+        }
         
         difunto.setNombre(datosDifunto.getNombre());
         difunto.setDui(datosDifunto.getDui());
@@ -156,7 +184,9 @@ public class CementerioServiceImpl implements CementerioService {
         difunto.setEstadoCivil(datosDifunto.getEstadoCivil());
         difunto.setCausaMuerte(datosDifunto.getCausaMuerte());
         difunto.setDomicilioFallecido(datosDifunto.getDomicilioFallecido());
+        difunto.setTipoDocumentoDifunto(datosDifunto.getTipoDocumentoDifunto());
         difunto.setNombreResponsable(datosDifunto.getNombreResponsable());
+        difunto.setDuiResponsable(datosDifunto.getDuiResponsable());
         difunto.setDomicilioResponsable(datosDifunto.getDomicilioResponsable());
         difunto.setCelularResponsable(datosDifunto.getCelularResponsable());
         difunto.setFechaNacimiento(datosDifunto.getFechaNacimiento());

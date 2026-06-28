@@ -25,6 +25,11 @@ export class DashboardComponent implements OnInit {
     
     // Cargar preferencia de modo oscuro
     this.darkMode = localStorage.getItem('dark_mode') === 'true';
+    if (this.darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
 
     // Ocultar menú en móviles por defecto
     if (window.innerWidth <= 992) {
@@ -45,6 +50,11 @@ export class DashboardComponent implements OnInit {
   toggleDarkMode(): void {
     this.darkMode = !this.darkMode;
     localStorage.setItem('dark_mode', this.darkMode.toString());
+    if (this.darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
   }
 
   onLogout(): void {

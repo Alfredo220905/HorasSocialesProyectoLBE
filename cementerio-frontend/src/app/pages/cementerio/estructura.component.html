@@ -123,23 +123,29 @@
         </div>
       </div>
       
-      <div class="parcelas-list" *ngIf="parcelas.length > 0" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+      <div class="parcelas-list" *ngIf="parcelas.length > 0" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
         <h4 style="margin-bottom: 0.5rem; color: #4b5563; font-size: 1rem;">Parcelas Registradas</h4>
         <ul style="list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem;">
-          <li *ngFor="let p of parcelas" style="display: flex; flex-direction: column; padding: 0.75rem 1rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;">
+          <li *ngFor="let p of parcelas" style="display: flex; flex-direction: column; padding: 0.75rem 1rem; background: #f9fafb; border: 1px solid var(--border-color); border-radius: 6px;">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 0.5rem;">
               <span style="font-weight: 500; color: #1f2937;">{{ p.nombre }}</span>
               <button (click)="pedirEliminarParcela(p)" style="background: none; border: none; cursor: pointer; color: #ef4444; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem;" title="Eliminar Parcela Completa">Eliminar Parcela</button>
             </div>
             
-            <div *ngIf="p.criptas && p.criptas.length > 0" style="display: flex; align-items: center; gap: 0.5rem; background: #fff; padding: 0.5rem; border-radius: 4px; border: 1px solid #e5e7eb;">
-              <label style="font-size: 0.875rem; color: #4b5563;">Lotes:</label>
-              <select [(ngModel)]="selectedLotes[p.id]" style="padding: 0.25rem 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; flex-grow: 1; outline: none;">
-                <option *ngFor="let lote of p.criptas" [value]="lote.id">F{{ lote.fila }} C{{ lote.columna }} ({{ lote.espacios?.length || 0 }} espacios)</option>
+            <div *ngIf="p.criptas && p.criptas.length > 0" style="display: flex; align-items: center; gap: 0.5rem; background: var(--card-bg); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color);">
+              <label style="font-size: 0.875rem; color: #4b5563; min-width: max-content;">Fila:</label>
+              <select [(ngModel)]="selectedFila[p.id]" (change)="onFilaChange(p)" style="padding: 0.25rem 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.875rem; outline: none; flex-grow: 1;">
+                <option *ngFor="let f of getUniqueFilas(p.criptas)" [value]="f">Fila {{ f }}</option>
               </select>
-              <button (click)="pedirEliminarLote(p)" style="background: #fee2e2; border: 1px solid #f87171; cursor: pointer; color: #ef4444; font-size: 0.875rem; padding: 0.25rem 0.5rem; border-radius: 4px; display: flex; align-items: center; gap: 0.25rem;" title="Eliminar Lote Seleccionado">Borrar Lote</button>
+
+              <label style="font-size: 0.875rem; color: #4b5563; min-width: max-content; margin-left: 0.5rem;">Columna:</label>
+              <select [(ngModel)]="selectedColumna[p.id]" style="padding: 0.25rem 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.875rem; outline: none; flex-grow: 1;">
+                <option *ngFor="let c of getUniqueColumnas(p.criptas, selectedFila[p.id])" [value]="c">Columna {{ c }}</option>
+              </select>
+
+              <button (click)="pedirEliminarLote(p)" style="background: #fee2e2; border: 1px solid #f87171; cursor: pointer; color: #ef4444; font-size: 0.875rem; padding: 0.25rem 0.5rem; border-radius: 4px; display: flex; align-items: center; gap: 0.25rem; margin-left: 0.5rem;" title="Eliminar la Fila y Columna seleccionada">Eliminar</button>
             </div>
-            <div *ngIf="!p.criptas || p.criptas.length === 0" style="font-size: 0.875rem; color: #6b7280; font-style: italic;">
+            <div *ngIf="!p.criptas || p.criptas.length === 0" style="font-size: 0.875rem; color: var(--text-muted); font-style: italic;">
               Sin lotes asignados.
             </div>
           </li>

@@ -65,16 +65,16 @@ import { HttpClient } from '@angular/common/http';
   `,
   styles: [`
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .card { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(214,51,132,0.08); margin-bottom: 1rem; }
+    .card { background: var(--card-bg); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(214,51,132,0.08); margin-bottom: 1rem; }
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
-    input, select { width: 100%; padding: 0.8rem 1rem; border: 1px solid #f3c2d9; border-radius: 8px; font-size: 1rem; background: #fff; }
+    input, select { width: 100%; padding: 0.8rem 1rem; border: 1px solid #f3c2d9; border-radius: 8px; font-size: 1rem; background: var(--card-bg); }
     input:focus, select:focus { outline: none; border-color: #d63384; box-shadow: 0 0 0 3px rgba(214,51,132,0.12); }
     .actions { display: flex; gap: 0.6rem; align-items: center; margin-top: 1rem; }
     .btn-primary { background: #d63384; color: #fff; border: none; padding: 0.75rem 1.2rem; border-radius: 8px; font-weight: 700; cursor: pointer; }
-    .btn-secondary { background: #fff; color: #d63384; border: 1px solid #d63384; padding: 0.75rem 1.2rem; border-radius: 8px; cursor: pointer; }
+    .btn-secondary { background: var(--card-bg); color: #d63384; border: 1px solid #d63384; padding: 0.75rem 1.2rem; border-radius: 8px; cursor: pointer; }
     .search-bar { margin-bottom: 1.5rem; }
     .docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-    .doc-card { border: 1px solid #f3c2d9; padding: 1rem; border-radius: 8px; display: flex; gap: 1rem; align-items: center; background: #fff; }
+    .doc-card { border: 1px solid #f3c2d9; padding: 1rem; border-radius: 8px; display: flex; gap: 1rem; align-items: center; background: var(--card-bg); }
     .doc-icon { min-width: 48px; height: 48px; border-radius: 8px; background: #fff0f6; color: #d63384; display: grid; place-items: center; font-weight: 800; }
     .doc-info { display: flex; flex-direction: column; flex: 1; gap: 0.25rem; }
     .doc-name { font-weight: 700; color: #3b2430; }

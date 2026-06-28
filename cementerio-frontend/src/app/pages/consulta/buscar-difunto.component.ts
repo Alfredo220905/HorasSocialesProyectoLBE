@@ -142,7 +142,7 @@ import { DifuntoService, DifuntoDTO } from '../../services/difunto.service';
           </div>
 
           <hr class="divider">
-          <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Datos Personales</h3>
+          <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-main); font-size: 1rem;">Datos Personales</h3>
           <div class="detalle-grid">
             <div class="detalle-item">
               <span class="label">Fecha Nacimiento:</span>
@@ -167,7 +167,7 @@ import { DifuntoService, DifuntoDTO } from '../../services/difunto.service';
           </div>
 
           <hr class="divider">
-          <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Responsable</h3>
+          <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-main); font-size: 1rem;">Responsable</h3>
           <div class="detalle-grid">
             <div class="detalle-item">
               <span class="label">Nombre Responsable:</span>
@@ -188,7 +188,7 @@ import { DifuntoService, DifuntoDTO } from '../../services/difunto.service';
           </div>
           
           <hr class="divider" *ngIf="difuntoSeleccionado.tipoCementerio === 'Privado' || difuntoSeleccionado.tipoCementerio === 'Osario'">
-          <h3 *ngIf="difuntoSeleccionado.tipoCementerio === 'Privado' || difuntoSeleccionado.tipoCementerio === 'Osario'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; font-size: 1rem;">Placa y Material</h3>
+          <h3 *ngIf="difuntoSeleccionado.tipoCementerio === 'Privado' || difuntoSeleccionado.tipoCementerio === 'Osario'" style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-main); font-size: 1rem;">Placa y Material</h3>
           <div class="detalle-grid" *ngIf="difuntoSeleccionado.tipoCementerio === 'Privado' || difuntoSeleccionado.tipoCementerio === 'Osario'">
             <div class="detalle-item">
               <span class="label">Material Placa:</span>
@@ -222,7 +222,7 @@ import { DifuntoService, DifuntoDTO } from '../../services/difunto.service';
           <div class="detalle-item" *ngIf="difuntoSeleccionado.documentos?.length">
             <span class="label">Documentos Adjuntos:</span>
             <ul class="value-list" style="list-style: none; padding: 0;">
-              <li *ngFor="let doc of difuntoSeleccionado.documentos" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; background: #f8fafc; padding: 0.5rem; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <li *ngFor="let doc of difuntoSeleccionado.documentos" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; background: var(--table-header-bg); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-table);">
                 <div>
                   <svg style="margin-right:4px; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> <a href="javascript:void(0)" (click)="verDocumento(doc)" style="color: #3b82f6; text-decoration: underline; cursor: pointer;">{{ doc.nombre }}</a>
                 </div>
@@ -251,17 +251,17 @@ import { DifuntoService, DifuntoDTO } from '../../services/difunto.service';
               </span>
             </div>
             
-            <div *ngIf="!pagosCargados || pagosCargados.length === 0" style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 1rem 0; background: #f9fafb; border-radius: 8px; margin-top: 0.5rem;">
+            <div *ngIf="!pagosCargados || pagosCargados.length === 0" style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0; background: #f9fafb; border-radius: 8px; margin-top: 0.5rem;">
               No hay pagos registrados
             </div>
 
-            <div *ngFor="let pago of pagosCargados" style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #e5e7eb; padding: 0.8rem 1rem; border-radius: 8px; margin-top: 0.5rem;">
+            <div *ngFor="let pago of pagosCargados" style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--border-color); padding: 0.8rem 1rem; border-radius: 8px; margin-top: 0.5rem;">
               <div style="display: flex; flex-direction: column; gap: 0.2rem;">
-                <strong style="color: #374151; font-size: 0.95rem;">{{ pago.concepto }}</strong>
-                <span style="color: #6b7280; font-size: 0.8rem;">{{ pago.fecha }}</span>
+                <strong style="color: var(--text-main); font-size: 0.95rem;">{{ pago.concepto }}</strong>
+                <span style="color: var(--text-muted); font-size: 0.8rem;">{{ pago.fecha }}</span>
               </div>
               <div style="display: flex; align-items: center; gap: 1rem;">
-                <span style="font-family: monospace; font-weight: bold; color: #111827; font-size: 1.1rem;">$ {{ pago.monto }}</span>
+                <span style="font-family: monospace; font-weight: bold; color: var(--text-main); font-size: 1.1rem;">$ {{ pago.monto }}</span>
                 <span class="status-badge" [ngStyle]="{'background': pago.estado === 'PAGADO' ? '#dcfce7' : '#fee2e2', 'color': pago.estado === 'PAGADO' ? '#16a34a' : '#ef4444'}" style="padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">
                   {{ pago.estado }}
                 </span>
@@ -297,7 +297,7 @@ import { DifuntoService, DifuntoDTO } from '../../services/difunto.service';
     .search-box {
       display: flex;
       gap: 10px;
-      background: white;
+      background: var(--card-bg);
       padding: 10px;
       border-radius: 50px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
@@ -326,7 +326,7 @@ import { DifuntoService, DifuntoDTO } from '../../services/difunto.service';
     }
 
     .result-card {
-      background: white;
+      background: var(--card-bg);
       border-radius: 15px;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
@@ -380,31 +380,31 @@ import { DifuntoService, DifuntoDTO } from '../../services/difunto.service';
     .text-success { color: #10b981; font-weight: bold; }
     
     /* Cripta section styles */
-    .cripta-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9; margin-bottom: 1.5rem; }
+    .cripta-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-bottom: 1.5rem; }
     .section-label { font-size: 0.85rem; font-weight: 700; color: #95a5a6; text-transform: uppercase; margin-bottom: 0.75rem; display: block; }
     .cripta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 0.75rem; }
-    .cripta-slot { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.5rem; text-align: center; display: flex; flex-direction: column; gap: 4px; }
+    .cripta-slot { background: #f9fafb; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem; text-align: center; display: flex; flex-direction: column; gap: 4px; }
     .cripta-slot.ocupado { background: #fee2e2; border-color: #fca5a5; }
     .cripta-slot.libre { background: #f0fdf4; border-color: #86efac; }
-    .slot-num { font-size: 0.75rem; font-weight: 700; color: #6b7280; }
+    .slot-num { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
     .slot-status { font-size: 0.7rem; text-transform: uppercase; font-weight: 800; }
     .cripta-slot.ocupado .slot-status { color: #dc2626; }
     .cripta-slot.libre .slot-status { color: #16a34a; }
-    .slot-name { font-size: 0.75rem; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .slot-name { font-size: 0.75rem; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     /* Modal Ver Más */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.2s ease; }
-    .modal-detail { background: white; border-radius: 16px; width: 90%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-    .modal-detail-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; }
-    .modal-detail-header h2 { margin: 0; color: #1e293b; font-size: 1.4rem; }
-    .btn-close-modal { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #94a3b8; transition: color 0.2s; }
+    .modal-detail { background: var(--card-bg); border-radius: 16px; width: 90%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal-detail-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
+    .modal-detail-header h2 { margin: 0; color: var(--text-main); font-size: 1.4rem; }
+    .btn-close-modal { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-muted); transition: color 0.2s; }
     .btn-close-modal:hover { color: #ef4444; }
     .modal-detail-body { padding: 1.5rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
-    .detail-section h3 { margin: 0 0 1rem 0; font-size: 0.85rem; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.05em; }
+    .detail-section h3 { margin: 0 0 1rem 0; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; }
     .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
     .detail-item { display: flex; flex-direction: column; gap: 2px; }
-    .dlabel { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
-    .dvalue { font-weight: 600; color: #1e293b; font-size: 0.95rem; }
+    .dlabel { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+    .dvalue { font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
     .tipo-privado { color: #9333ea; }
     .tipo-publico { color: #2563eb; }
     .doc-list { margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem; }
@@ -416,7 +416,7 @@ import { DifuntoService, DifuntoDTO } from '../../services/difunto.service';
     .detalle-item .label { font-size:0.8rem; font-weight:700; color:#95a5a6; text-transform:uppercase; }
     .detalle-item .value { font-size:1rem; font-weight:600; color:#34495e; }
     .detalle-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; background:#f9fafb; padding:1rem; border-radius:12px; }
-    .divider { border:none; border-top:1px solid #e5e7eb; margin:0.5rem 0; }
+    .divider { border:none; border-top: 1px solid var(--border-color); margin:0.5rem 0; }
     .value-list { margin:0; padding-left:1.2rem; font-size:0.95rem; font-weight:600; color:#34495e; }
     .alerta-publico { background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; padding: 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; }
     .status-badge.success { background: #dcfce7; color: #166534; }

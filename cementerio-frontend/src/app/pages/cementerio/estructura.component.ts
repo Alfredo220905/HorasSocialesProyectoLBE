@@ -64,7 +64,8 @@ export class EstructuraComponent implements OnInit {
     editDui: ''
   };
 
-  selectedLotes: { [parcelaId: number]: number } = {};
+  selectedFila: { [parcelaId: number]: number } = {};
+  selectedColumna: { [parcelaId: number]: number } = {};
 
   private apiUrl = `${environment.apiUrl}/estructura`;
 
@@ -110,11 +111,19 @@ export class EstructuraComponent implements OnInit {
       this.selectedParcelaId = null;
       this.criptasDisponibles = [];
       this.selectedCriptaIdParaAsignar = null;
-      this.selectedLotes = {};
+      this.selectedFila = {};
+      this.selectedColumna = {};
       
       this.parcelas.forEach(p => {
         if (p.criptas && p.criptas.length > 0) {
-          this.selectedLotes[p.id] = p.criptas[0].id;
+          const filas = this.getUniqueFilas(p.criptas);
+          if (filas.length > 0) {
+            this.selectedFila[p.id] = filas[0];
+            const columnas = this.getUniqueColumnas(p.criptas, filas[0]);
+            if (columnas.length > 0) {
+              this.selectedColumna[p.id] = columnas[0];
+            }
+          }
         }
       });
     }
@@ -135,11 +144,19 @@ export class EstructuraComponent implements OnInit {
           
           this.parcelas.forEach(p => {
             if (p.criptas && p.criptas.length > 0) {
-              if (!this.selectedLotes[p.id] || !p.criptas.find((c:any) => c.id == this.selectedLotes[p.id])) {
-                this.selectedLotes[p.id] = p.criptas[0].id;
+              if (!this.selectedFila[p.id]) {
+                const filas = this.getUniqueFilas(p.criptas);
+                if (filas.length > 0) {
+                  this.selectedFila[p.id] = filas[0];
+                  const cols = this.getUniqueColumnas(p.criptas, filas[0]);
+                  if (cols.length > 0) {
+                    this.selectedColumna[p.id] = cols[0];
+                  }
+                }
               }
             } else {
-              delete this.selectedLotes[p.id];
+              delete this.selectedFila[p.id];
+              delete this.selectedColumna[p.id];
             }
           });
           
@@ -383,8 +400,8 @@ export class EstructuraComponent implements OnInit {
   }
 
   pedirEliminarParcela(p: any) {
-    this.mostrarModal('confirmar', 'Eliminar Parcela',
-      '¿Está seguro de eliminar la parcela "' + p.nombre + '"? Esto borrará todos sus lotes de forma permanente.',
+    this.mostrarModal('confirmar', 'Eliminar Lote Completo (Parcela)',
+      '¿Está seguro de eliminar el lote completo "' + p.nombre + '"? Esto borrará todas sus filas y columnas de forma permanente.',
       () => this.ejecutarEliminarParcela(p.id)
     );
   }
@@ -397,34 +414,66 @@ export class EstructuraComponent implements OnInit {
         this.selectedParcelaId = null;
         this.recargarDatosSeccion();
       },
-      error: () => this.mostrarModal('error', 'Error', 'No se pudo eliminar la parcela.')
+      error: (err) => {
+        console.error(err);
+        let msg = 'No se pudo eliminar la parcela.';
+        if (err.error?.message) msg = err.error.message;
+        else if (typeof err.error === 'string') msg = err.error;
+        this.mostrarModal('error', 'Error', msg);
+      }
     });
   }
 
   pedirEliminarLote(parcela: any) {
-    const loteId = this.selectedLotes[parcela.id];
-    if (!loteId) {
-      this.mostrarModal('error', 'Error', 'Debe seleccionar un lote para eliminar.');
+    const fila = this.selectedFila[parcela.id];
+    const columna = this.selectedColumna[parcela.id];
+    if (!fila || !columna) {
+      this.mostrarModal('error', 'Error', 'Debe seleccionar fila y columna.');
       return;
     }
-    const lote = parcela.criptas.find((c: any) => c.id == loteId);
+    const lote = parcela.criptas.find((c: any) => c.fila == fila && c.columna == columna);
     if (!lote) return;
     
-    this.mostrarModal('confirmar', 'Eliminar Lote',
-      `¿Está seguro de eliminar el lote F${lote.fila} C${lote.columna} de la parcela "${parcela.nombre}"?`,
-      () => this.ejecutarEliminarLote(loteId, parcela.id)
+    this.mostrarModal('confirmar', 'Eliminar Fila/Columna',
+      `¿Está seguro de eliminar la Fila ${lote.fila} / Columna ${lote.columna} de la parcela "${parcela.nombre}"?`,
+      () => this.ejecutarEliminarLote(lote.id, parcela.id)
     );
   }
 
   ejecutarEliminarLote(loteId: number, parcelaId: number) {
     this.http.delete(`${this.apiUrl}/lote/${loteId}`).subscribe({
       next: () => {
-        this.mostrarModal('exito', 'Lote Eliminado', 'El lote ha sido eliminado correctamente.');
+        this.mostrarModal('exito', 'Fila/Columna Eliminada', 'La Fila y Columna seleccionada ha sido eliminada correctamente.');
         this.cargarCementerios();
         this.recargarDatosSeccion();
       },
-      error: () => this.mostrarModal('error', 'Error', 'No se pudo eliminar el lote.')
+      error: (err) => {
+        console.error(err);
+        let msg = 'No se pudo eliminar.';
+        if (err.error?.message) msg = err.error.message;
+        else if (typeof err.error === 'string') msg = err.error;
+        this.mostrarModal('error', 'Error', msg);
+      }
     });
+  }
+
+  getUniqueFilas(criptas: any[]): number[] {
+    if (!criptas) return [];
+    return Array.from(new Set(criptas.map(c => c.fila))).sort((a,b) => a-b);
+  }
+
+  getUniqueColumnas(criptas: any[], fila: number): number[] {
+    if (!criptas || !fila) return [];
+    return Array.from(new Set(criptas.filter(c => c.fila == fila).map(c => c.columna))).sort((a,b) => a-b);
+  }
+  
+  onFilaChange(parcela: any) {
+    const columnas = this.getUniqueColumnas(parcela.criptas, this.selectedFila[parcela.id]);
+    if (columnas.length > 0) {
+      this.selectedColumna[parcela.id] = columnas[0];
+    } else {
+      delete this.selectedColumna[parcela.id];
+    }
   }
 
   onBenDuiInput(event: any, field: 'nuevoDui' | 'editDui') {

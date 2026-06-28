@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { CementerioService } from '../../services/cementerio.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
@@ -7,7 +8,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-resumen',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="resumen-container">
       <div class="header-section">
@@ -21,6 +22,20 @@ import { Router } from '@angular/router';
       </div>
 
       <ng-container *ngIf="!loading">
+        <!-- Filtro por cementerio -->
+        <div class="filter-section" style="margin-bottom: 2rem; background: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem; justify-content: space-between; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 300px;">
+            <div style="font-weight: 600; color: var(--text-main);">Filtrar resumen por cementerio:</div>
+            <select [(ngModel)]="cementerioSeleccionado" (ngModelChange)="onCementerioChange()" style="flex: 1; max-width: 400px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;">
+              <option [ngValue]="null">Todos los cementerios (Global)</option>
+              <option *ngFor="let c of cementeriosBase" [ngValue]="c.id">{{ c.nombre }}</option>
+            </select>
+          </div>
+          <button *ngIf="cementerioSeleccionado" class="btn-action view" (click)="verMasCementerio()" style="display: flex; align-items: center; gap: 0.5rem; background: #fff0f6; border: 1px solid #fce4f0; color: #d63384; padding: 0.6rem 1rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            Ver Más
+          </button>
+        </div>
         <!-- Tarjetas principales -->
         <div class="stats-grid">
           <div class="stat-card primary">
@@ -54,74 +69,46 @@ import { Router } from '@angular/router';
 
         <!-- Estados de espacios -->
         <div class="section-title">
-          <h3>Ocupación de Espacios Global</h3>
+          <h3>Ocupación de Espacios</h3>
         </div>
-        <div class="occupancy-bar-container">
-          <div class="occupancy-bar">
-            <div class="occ-fill disponible" [style.width.%]="getPct(resumen.espaciosDisponibles)"></div>
-            <div class="occ-fill ocupado" [style.width.%]="getPct(resumen.espaciosOcupados)"></div>
-            <div class="occ-fill mantenimiento" [style.width.%]="getPct(resumen.espaciosMantenimiento)"></div>
+        
+        <div class="chart-container" style="display: flex; flex-direction: column; align-items: center; background: var(--card-bg); padding: 2.5rem; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 2rem;">
+          <div class="pie-chart" [style.background]="getPieChartStyle()" style="width: 260px; height: 260px; border-radius: 50%; box-shadow: 0 8px 16px rgba(0,0,0,0.1); position: relative; margin-bottom: 2.5rem; transition: background 0.5s ease-out;">
+            <!-- Inner circle for donut effect -->
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 150px; height: 150px; background: var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
+              <span style="font-size: 2.2rem; font-weight: 800; color: var(--text-main);">{{ getPct(resumen.espaciosOcupados) | number:'1.0-0' }}%</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Ocupación</span>
+            </div>
           </div>
-          <div class="legend-row">
-            <span class="leg"><span class="dot green"></span> Disponibles: {{ resumen.espaciosDisponibles }}</span>
-            <span class="leg"><span class="dot red"></span> Ocupados: {{ resumen.espaciosOcupados }}</span>
-            <span class="leg"><span class="dot orange"></span> Mantenimiento: {{ resumen.espaciosMantenimiento }}</span>
+          <div class="legend-row" style="display: flex; gap: 3rem; justify-content: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.8rem; padding: 0.5rem 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+              <div style="width: 18px; height: 18px; border-radius: 4px; background: #16a34a;"></div>
+              <span style="font-weight: 600; color: #166534; font-size: 1.1rem;">Disponibles: <strong style="font-size: 1.2rem;">{{ resumen.espaciosDisponibles }}</strong></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.8rem; padding: 0.5rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
+              <div style="width: 18px; height: 18px; border-radius: 4px; background: #dc2626;"></div>
+              <span style="font-weight: 600; color: #991b1b; font-size: 1.1rem;">Ocupados: <strong style="font-size: 1.2rem;">{{ resumen.espaciosOcupados }}</strong></span>
+            </div>
           </div>
         </div>
 
-        <!-- Detalle Privado -->
-        <div class="section-title">
-          <h3>Detalle de Espacios Privados</h3>
-        </div>
-        <div class="table-card">
-          <div *ngIf="resumen.detallesPrivados.length === 0" class="empty-state">
-            <p>No hay difuntos registrados en parcelas privadas.</p>
-          </div>
-          
-          <div class="table-responsive">
-            <table *ngIf="resumen.detallesPrivados.length > 0">
-              <thead>
-                <tr>
-                  <th>Difunto</th>
-                  <th>Ubicación</th>
-                  <th>Propietario / Dueño</th>
-                  <th>Beneficiarios</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let det of resumen.detallesPrivados">
-                  <td><strong>{{ det.difunto }}</strong></td>
-                  <td>
-                    <span class="badge">{{ det.cementerio }}</span>
-                    <span class="badge light">{{ det.parcela }}</span>
-                  </td>
-                  <td class="owner-cell">{{ det.propietario }}</td>
-                  <td>
-                    <ul class="ben-list" *ngIf="det.beneficiarios && det.beneficiarios.length > 0">
-                      <li *ngFor="let b of det.beneficiarios">{{ b.nombre || b }}</li>
-                    </ul>
-                    <span class="text-muted" *ngIf="!det.beneficiarios || det.beneficiarios.length === 0">Ninguno</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
       </ng-container>
     </div>
   `,
   styleUrls: ['./resumen.component.css']
 })
 export class ResumenComponent implements OnInit {
+  cementeriosBase: any[] = [];
+  detallesRaw: any[] = [];
+  cementerioSeleccionado: number | null = null;
+
   resumen = {
     totalCementerios: 0,
     totalParcelas: 0,
     totalDifuntosPublicos: 0,
     totalDifuntosPrivados: 0,
     espaciosDisponibles: 0,
-    espaciosOcupados: 0,
-    espaciosMantenimiento: 0,
-    detallesPrivados: [] as any[]
+    espaciosOcupados: 0
   };
   
   loading = true;
@@ -143,7 +130,8 @@ export class ResumenComponent implements OnInit {
 
     this.cementerioService.getCementerios().subscribe({
       next: (cems) => {
-        this.resumen.totalCementerios = cems.length;
+        this.cementeriosBase = cems;
+        
         if (cems.length === 0) {
           this.loading = false;
           return;
@@ -153,9 +141,10 @@ export class ResumenComponent implements OnInit {
         cems.forEach(c => {
           this.cementerioService.getDetalleCementerio(c.id).subscribe({
             next: (detalle) => {
-              this.agregarAlResumen(detalle);
+              this.detallesRaw.push(detalle);
               pending--;
               if (pending === 0) {
+                this.calcularResumen();
                 this.loading = false;
               }
             },
@@ -163,6 +152,7 @@ export class ResumenComponent implements OnInit {
               console.error('Error al cargar detalle del cementerio:', err);
               pending--;
               if (pending === 0) {
+                this.calcularResumen();
                 this.loading = false;
               }
             }
@@ -203,20 +193,6 @@ export class ResumenComponent implements OnInit {
                     } else {
                       this.resumen.totalDifuntosPublicos++;
                     }
-
-                    // Agregar a la tabla de detalles privados si aplica
-                    if (esPrivado && esp.difunto) {
-                      this.resumen.detallesPrivados.push({
-                        difunto: esp.difunto.nombre,
-                        cementerio: cem.nombre,
-                        parcela: par.nombre,
-                        propietario: cr.cliente ? cr.cliente.nombre : 'Sin asignar',
-                        beneficiarios: cr.beneficiarios || []
-                      });
-                    }
-
-                  } else if (esp.estado === 'EN_MANTENIMIENTO') {
-                    this.resumen.espaciosMantenimiento++;
                   }
                 });
               }
@@ -227,9 +203,42 @@ export class ResumenComponent implements OnInit {
     });
   }
 
+  calcularResumen() {
+    this.resumen = {
+      totalCementerios: this.cementerioSeleccionado ? 1 : this.cementeriosBase.length,
+      totalParcelas: 0,
+      totalDifuntosPublicos: 0,
+      totalDifuntosPrivados: 0,
+      espaciosDisponibles: 0,
+      espaciosOcupados: 0
+    };
+
+    this.detallesRaw.forEach(cem => {
+      if (this.cementerioSeleccionado && cem.id !== this.cementerioSeleccionado) {
+        return;
+      }
+      this.agregarAlResumen(cem);
+    });
+  }
+
+  onCementerioChange() {
+    this.calcularResumen();
+  }
+
   getPct(valor: number): number {
-    const total = this.resumen.espaciosDisponibles + this.resumen.espaciosOcupados + this.resumen.espaciosMantenimiento;
+    const total = this.resumen.espaciosDisponibles + this.resumen.espaciosOcupados;
     if (total === 0) return 0;
     return (valor / total) * 100;
+  }
+
+  getPieChartStyle() {
+    const ocupadoPct = this.getPct(this.resumen.espaciosOcupados);
+    return `conic-gradient(#dc2626 0% ${ocupadoPct}%, #16a34a ${ocupadoPct}% 100%)`;
+  }
+
+  verMasCementerio() {
+    if (this.cementerioSeleccionado) {
+      this.router.navigate(['/dashboard/cementerios', this.cementerioSeleccionado]);
+    }
   }
 }

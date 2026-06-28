@@ -1,106 +1,0 @@
-[INFO] Scanning for projects...
-Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/org/cyclonedx/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml
-Progress (1): 234 BProgress (2): 234 B | 243 BProgress (3): 234 B | 243 B | 249 BProgress (4): 234 B | 243 B | 249 B | 255 B                                           Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml (249 B at 353 B/s)
-Downloaded from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml (234 B at 330 B/s)
-Downloaded from central: https://repo.maven.apache.org/maven2/org/cyclonedx/maven-metadata.xml (243 B at 342 B/s)
-Downloaded from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml (255 B at 359 B/s)
-Downloading from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml
-Progress (1): 375 BProgress (2): 375 B | 398 BProgress (3): 375 B | 398 B | 394 BProgress (4): 375 B | 398 B | 394 B | 242 B                                           Downloaded from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml (398 B at 2.2 kB/s)
-Downloaded from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml (394 B at 2.1 kB/s)
-Downloaded from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml (375 B at 2.0 kB/s)
-Downloaded from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml (242 B at 1.4 kB/s)
-Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml
-Progress (1): 3.1 kBProgress (1): 7.7 kBProgress (1): 12 kB Progress (1): 17 kBProgress (1): 20 kBProgress (1): 21 kBProgress (2): 21 kB | 4.6 kBProgress (2): 21 kB | 9.7 kBProgress (2): 21 kB | 14 kB                            Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml (14 kB at 172 kB/s)
-Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml (21 kB at 106 kB/s)
-[INFO] 
-[INFO] ---------------------< com.cementerio:Cementerio >----------------------
-[INFO] Building  0.0.1-SNAPSHOT
-[INFO]   from pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO] 
-[INFO] >>> spring-boot:3.3.5:run (default-cli) > test-compile @ Cementerio >>>
-[INFO] 
-[INFO] --- resources:3.3.1:resources (default-resources) @ Cementerio ---
-[INFO] Copying 1 resource from src\main\resources to target\classes
-[INFO] Copying 0 resource from src\main\resources to target\classes
-[INFO] 
-[INFO] --- compiler:3.13.0:compile (default-compile) @ Cementerio ---
-[INFO] Nothing to compile - all classes are up to date.
-[INFO] 
-[INFO] --- resources:3.3.1:testResources (default-testResources) @ Cementerio ---
-[INFO] skip non existing resourceDirectory C:\Users\ander\Downloads\Cementerio (2)\Cementerio\Cementerio\src\test\resources
-[INFO] 
-[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ Cementerio ---
-[INFO] Nothing to compile - all classes are up to date.
-[INFO] 
-[INFO] <<< spring-boot:3.3.5:run (default-cli) < test-compile @ Cementerio <<<
-[INFO] 
-[INFO] 
-[INFO] --- spring-boot:3.3.5:run (default-cli) @ Cementerio ---
-[INFO] Attaching agents: []
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
-
- :: Spring Boot ::                (v3.3.5)
-
-2026-06-19T21:52:51.949-06:00  INFO 22440 --- [Cementerio] [           main] com.cementerio.CementerioApplication     : Starting CementerioApplication using Java 25.0.1 with PID 22440 (C:\Users\ander\Downloads\Cementerio (2)\Cementerio\Cementerio\target\classes started by ander in C:\Users\ander\Downloads\Cementerio (2)\Cementerio\Cementerio)
-2026-06-19T21:52:51.952-06:00  INFO 22440 --- [Cementerio] [           main] com.cementerio.CementerioApplication     : No active profile set, falling back to 1 default profile: "default"
-2026-06-19T21:52:52.743-06:00  INFO 22440 --- [Cementerio] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-06-19T21:52:52.870-06:00  INFO 22440 --- [Cementerio] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 118 ms. Found 13 JPA repository interfaces.
-WARNING: A restricted method in java.lang.System has been called
-WARNING: java.lang.System::load has been called by org.apache.tomcat.jni.Library in an unnamed module (file:/C:/Users/ander/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.31/tomcat-embed-core-10.1.31.jar)
-WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
-WARNING: Restricted methods will be blocked in a future release unless native access is enabled
-
-2026-06-19T21:52:53.571-06:00  INFO 22440 --- [Cementerio] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8081 (http)
-2026-06-19T21:52:53.591-06:00  INFO 22440 --- [Cementerio] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-06-19T21:52:53.592-06:00  INFO 22440 --- [Cementerio] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.31]
-2026-06-19T21:52:53.668-06:00  INFO 22440 --- [Cementerio] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-06-19T21:52:53.669-06:00  INFO 22440 --- [Cementerio] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1657 ms
-2026-06-19T21:52:53.867-06:00  INFO 22440 --- [Cementerio] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-06-19T21:52:53.918-06:00  INFO 22440 --- [Cementerio] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
-2026-06-19T21:52:53.962-06:00  INFO 22440 --- [Cementerio] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-06-19T21:52:54.297-06:00  INFO 22440 --- [Cementerio] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-06-19T21:52:54.340-06:00  INFO 22440 --- [Cementerio] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-06-19T21:52:54.542-06:00  INFO 22440 --- [Cementerio] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@77ce88c4
-2026-06-19T21:52:54.544-06:00  INFO 22440 --- [Cementerio] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-06-19T21:52:54.587-06:00  WARN 22440 --- [Cementerio] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-06-19T21:52:56.097-06:00  INFO 22440 --- [Cementerio] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-06-19T21:52:56.351-06:00  INFO 22440 --- [Cementerio] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-06-19T21:52:57.041-06:00  WARN 22440 --- [Cementerio] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-06-19T21:52:57.085-06:00  INFO 22440 --- [Cementerio] [           main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
-2026-06-19T21:52:57.086-06:00  WARN 22440 --- [Cementerio] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used for username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider.
-2026-06-19T21:52:57.639-06:00  INFO 22440 --- [Cementerio] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8081 (http) with context path '/'
-2026-06-19T21:52:57.646-06:00  INFO 22440 --- [Cementerio] [           main] com.cementerio.CementerioApplication     : Started CementerioApplication in 6.136 seconds (process running for 6.568)
-=========================================================
-NUEVO HASH PARA LA CONTRASEÑA '1234':
-$2a$10$CPjU/SXqQdn4CplwJrKFL.FNqyYLbAR8rSJegFBN9A3NFnjA2zhoi
-=========================================================
-2026-06-19T21:53:31.752-06:00  INFO 22440 --- [Cementerio] [nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-06-19T21:53:31.753-06:00  INFO 22440 --- [Cementerio] [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-06-19T21:53:31.754-06:00  INFO 22440 --- [Cementerio] [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  03:20 min
-[INFO] Finished at: 2026-06-19T21:56:07-06:00
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.3.5:run (default-cli) on project Cementerio: Process terminated with exit code: -1 -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

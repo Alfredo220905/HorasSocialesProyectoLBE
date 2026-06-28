@@ -49,10 +49,12 @@ public class UsuarioService {
             }
             
             // Si viene un cementerio con ID, lo buscamos para asegurar que existe y está completo
-            if (u.getCementerio() != null && u.getCementerio().getId() != null) {
+            if ("OPERADOR".equals(u.getRol()) && u.getCementerio() != null && u.getCementerio().getId() != null) {
                 var cem = cementerioRepo.findById(u.getCementerio().getId())
                     .orElseThrow(() -> new RuntimeException("El cementerio seleccionado no existe"));
                 u.setCementerio(cem);
+            } else {
+                u.setCementerio(null);
             }
             
             // Encriptamos la contraseña para seguridad
@@ -76,6 +78,15 @@ public class UsuarioService {
         if (u.getContrasena() != null && !u.getContrasena().isEmpty()) {
             existente.setContrasena(passwordEncoder.encode(u.getContrasena()));
         }
+        
+        if ("OPERADOR".equals(u.getRol()) && u.getCementerio() != null && u.getCementerio().getId() != null) {
+            var cem = cementerioRepo.findById(u.getCementerio().getId())
+                .orElseThrow(() -> new RuntimeException("El cementerio seleccionado no existe"));
+            existente.setCementerio(cem);
+        } else {
+            existente.setCementerio(null);
+        }
+        
         return repo.save(existente);
     }
 

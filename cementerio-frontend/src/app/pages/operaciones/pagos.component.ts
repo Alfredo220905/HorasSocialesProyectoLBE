@@ -22,7 +22,11 @@ import { catchError } from 'rxjs/operators';
           <h3 style="margin: 0; color: #8a1f53;">Seleccionar Propietario o Difunto</h3>
           <p class="text-muted" style="margin-top: 0.3rem;">Busque en la tabla para seleccionar a quién se le aplicará el cobro.</p>
         </div>
-        <div class="search-container" style="max-width: 400px; margin: 0; flex-grow: 1;">
+        <div class="search-container" style="max-width: 400px; margin: 0; flex-grow: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+          <select [(ngModel)]="selectedCementerioId" (change)="onCementerioChange()" class="search-input">
+            <option [ngValue]="null">Todos los cementerios</option>
+            <option *ngFor="let c of cementerios" [value]="c.id">{{ c.nombre }}</option>
+          </select>
           <input type="text" placeholder="Buscar por DUI o Nombre..." 
                  [(ngModel)]="filtroPropietario" 
                  (input)="onSearchPropietarioInput($event)"
@@ -42,8 +46,8 @@ import { catchError } from 'rxjs/operators';
           </thead>
           <tbody>
              <tr *ngFor="let item of propietariosPaginados">
-                <td style="font-family: monospace; font-size: 0.95rem; color: #475569;">{{ item._displayId }}</td>
-                <td><strong style="color: #111827;">{{ item._displayName }}</strong></td>
+                <td style="font-family: monospace; font-size: 0.95rem; color: var(--text-main);">{{ item._displayId }}</td>
+                <td><strong style="color: var(--text-main);">{{ item._displayName }}</strong></td>
                 <td>
                   <span class="cat-badge" [ngClass]="item._tipo === 'PROPIETARIO' ? 'general' : 'jardin'">
                     {{ item._tipo }}
@@ -62,7 +66,7 @@ import { catchError } from 'rxjs/operators';
 
       <div class="pagination-controls" *ngIf="propietariosFiltrados.length > 0">
         <button [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
-        <span style="font-weight: 600; color: #475569;">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <span style="font-weight: 600; color: var(--text-main);">Página {{ paginaActual }} de {{ totalPaginas }}</span>
         <button [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
       </div>
     </div>
@@ -88,11 +92,19 @@ import { catchError } from 'rxjs/operators';
       <div class="main-grid">
         <!-- Columna Izquierda: Historial de Pagos -->
         <div class="card history-card">
-          <div class="page-header" style="margin-bottom: 1rem;">
-            <h3 style="margin:0;">Historial de Pagos</h3>
-            <span class="badge" [ngClass]="{'pagado': pagosPendientes === 0, 'pendiente': pagosPendientes > 0}">
-              {{ pagosPendientes }} Pendiente(s)
-            </span>
+          <div class="page-header" style="margin-bottom: 1rem; align-items: center;">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+              <h3 style="margin:0;">Historial de Pagos</h3>
+              <span class="badge" [ngClass]="{'pagado': pagosPendientes === 0, 'pendiente': pagosPendientes > 0}">
+                {{ pagosPendientes }} Pendiente(s)
+              </span>
+            </div>
+            <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.3rem; color: #b02a37; border-color: #f8d7da;" 
+                    *ngIf="tienePagosPagados" 
+                    (click)="limpiarPagados()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+              Limpiar Historial
+            </button>
           </div>
 
           <div class="table-container">
@@ -120,7 +132,7 @@ import { catchError } from 'rxjs/operators';
                     <button class="btn-icon" style="color: #207044; border-color: #a3d9b4; background: #e8f5e9; display: flex; align-items: center; gap: 4px;" *ngIf="pago.estado !== 'PAGADO'" (click)="marcar(pago.id, 'PAGADO')">
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Cobrar
                     </button>
-                    <button class="btn-icon danger" (click)="eliminar(pago.id)">Eliminar</button>
+                    <button class="btn-icon danger" *ngIf="pago.estado !== 'PAGADO'" (click)="eliminar(pago.id)">Eliminar</button>
                   </td>
                 </tr>
                 <tr *ngIf="pagosPropietario.length === 0">
@@ -168,7 +180,7 @@ import { catchError } from 'rxjs/operators';
               <input type="text" placeholder="Ej: Renovación anual..." [(ngModel)]="form.concepto">
             </div>
             
-            <div style="background: #fff; padding: 1rem; border-radius: 8px; border: 1px solid #f3c2d9; display: flex; align-items: center; justify-content: space-between;">
+            <div style="background: var(--card-bg); padding: 1rem; border-radius: 8px; border: 1px solid #f3c2d9; display: flex; align-items: center; justify-content: space-between;">
               <span style="font-weight: bold; color: #8a1f53;">Total a Cobrar</span>
               <div style="display: flex; align-items: center; gap: 0.2rem;">
                 <span style="font-weight: 800; font-size: 1.5rem; color: #d63384;">$</span>
@@ -191,7 +203,7 @@ import { catchError } from 'rxjs/operators';
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .card { background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(214,51,132,0.06); margin-bottom: 1rem; }
+    .card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(214,51,132,0.06); margin-bottom: 1rem; }
     
     .search-container { position: relative; width: 100%; max-width: 800px; margin-top: 1rem; }
     .search-input { width: 100%; padding: 1.2rem 1.5rem; font-size: 1.1rem; border: 2px solid #fce4f0; border-radius: 12px; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
@@ -203,41 +215,40 @@ import { catchError } from 'rxjs/operators';
     
     .main-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 1.5rem; align-items: start; }
     
-    input, select { width: 100%; padding: 0.8rem 1rem; border: 1px solid #f3c2d9; border-radius: 8px; font-size: 1rem; background: #fff; }
+    input, select { width: 100%; padding: 0.8rem 1rem; border: 1px solid #f3c2d9; border-radius: 8px; font-size: 1rem; background: var(--card-bg); }
     input:focus, select:focus { outline: none; border-color: #d63384; }
     
     .actions, .row-actions { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
     .btn-primary { background: linear-gradient(135deg, #d63384, #a62664); color: #fff; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(214,51,132,0.2); display: flex; align-items: center; justify-content: center; }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 15px rgba(214,51,132,0.3); }
-    .btn-secondary { background: #fff; color: #8a1f53; border: 1px solid #e2e8f0; padding: 0.65rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-    .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
-    .btn-icon { padding: 0.45rem 0.8rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: #475569; transition: 0.2s; }
-    .btn-icon:hover { background: #f8fafc; }
-    .btn-icon.danger { color: #b02a37; border-color: #f8d7da; background: #fff; }
+    .btn-secondary { background: var(--card-bg); border: 1px solid var(--border-table); color: var(--text-muted); padding: 0.65rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .btn-secondary:hover { background: var(--table-header-bg); border-color: var(--text-muted); }
+    .btn-icon { background: transparent; border: none; padding: 0.5rem; color: var(--text-muted); cursor: pointer; border-radius: 6px; transition: 0.2s; }
+    .btn-icon:hover { background: var(--table-header-bg); }
+    .btn-icon.danger { color: #b02a37; border-color: #f8d7da; background: var(--card-bg); }
     .btn-icon.danger:hover { background: #fff5f5; }
     
-    .table-container { overflow-x: auto; border: 1px solid #f1f5f9; border-radius: 8px; }
-    .data-table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; padding: 1rem; border-bottom: 1px solid #f1f5f9; }
-    th { color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; background: #f8fafc; }
+    .table-container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; background: var(--table-header-bg); border-bottom: 2px solid var(--border-table); }
+    td { padding: 1rem; border-bottom: 1px solid var(--border-table); color: var(--text-main); font-size: 0.95rem; }
+    tr:hover td { background: var(--hover-bg); }
     .badge { padding: 0.35rem 0.8rem; border-radius: 999px; font-size: 0.8rem; font-weight: 700; display: inline-block; }
     .badge.pagado { background: #dcfce7; color: #166534; }
     .badge.pendiente { background: #fee2e2; color: #991b1b; }
-    .empty { text-align: center; color: #94a3b8; padding: 3rem 1rem !important; font-style: italic; }
+    .empty { text-align: center; color: var(--text-muted); padding: 3rem 1rem !important; font-style: italic; }
     .message.error { color: #b02a37; font-weight: 600; margin-top: 1rem; font-size: 0.9rem; }
     
-    /* Buscador Dropdown */
     .multi-select-container { position: relative; width: 100%; }
-    .dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 20; max-height: 300px; overflow-y: auto; margin-top: 8px; padding: 0.5rem; }
+    .dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg); border: 1px solid var(--border-table); border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 20; max-height: 300px; overflow-y: auto; margin-top: 8px; padding: 0.5rem; }
     .dropdown-item { padding: 0.8rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.2s; flex-wrap: wrap;}
-    .dropdown-item:hover { background: #f8fafc; }
+    .dropdown-item:hover { background: var(--hover-bg); }
     
-    /* Chips Seleccionados */
     .selected-tasas-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
     .tasa-chip { display: flex; align-items: center; gap: 0.5rem; background: #fff0f6; color: #d63384; border: 1px solid #fce4f0; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
     .remove-tasa { cursor: pointer; font-weight: bold; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: #fce4f0; color: #d63384; }
     .remove-tasa:hover { background: #d63384; color: white; }
-    .text-muted { color: #64748b; font-size: 0.9rem; }
+    .text-muted { color: var(--text-muted); font-size: 0.9rem; }
     
     .cat-badge { font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 4px; letter-spacing: 0.05em; }
     .jardin { background: #fef9c3; color: #854d0e; }
@@ -247,13 +258,13 @@ import { catchError } from 'rxjs/operators';
       display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.5rem; padding: 1rem;
     }
     .pagination-controls button {
-      padding: 0.5rem 1rem; border: 1px solid #cbd5e1; background: white; border-radius: 8px; cursor: pointer; color: #475569; font-weight: 600;
+      padding: 0.5rem 1rem; border: 1px solid var(--border-color); background: var(--card-bg); border-radius: 8px; cursor: pointer; color: var(--text-main); font-weight: 600;
     }
     .pagination-controls button:disabled {
       opacity: 0.5; cursor: not-allowed;
     }
     .pagination-controls button:not(:disabled):hover {
-      background: #f8fafc; border-color: #94a3b8;
+      background: #f8fafc; border-color: var(--text-muted);
     }
 
     /* RESPONSIVE MÓVIL */
@@ -316,9 +327,31 @@ export class PagosComponent implements OnInit {
 
   constructor(private http: HttpClient) {}
 
+  cementerios: any[] = [];
+  selectedCementerioId: number | null = null;
+  selectedCementerioNombre: string | null = null;
+
   ngOnInit() {
     this.cargarTasas();
+    this.cargarCementerios();
     this.buscarPropietario(); // Cargar la tabla al inicio
+  }
+
+  cargarCementerios() {
+    this.http.get<any[]>(`${environment.apiUrl}/cementerios`).subscribe(data => {
+      this.cementerios = data;
+    });
+  }
+
+  onCementerioChange() {
+    if (this.selectedCementerioId) {
+      const c = this.cementerios.find(x => x.id == this.selectedCementerioId);
+      this.selectedCementerioNombre = c ? c.nombre : null;
+    } else {
+      this.selectedCementerioNombre = null;
+    }
+    this.paginaActual = 1;
+    this.buscarPropietario();
   }
 
   get pagosPendientes() {
@@ -356,12 +389,21 @@ export class PagosComponent implements OnInit {
       const pDifuntos = this.http.get<any[]>(`${this.difuntosBusquedaUrl}?query=${q}`).pipe(catchError(() => of([])));
       
       forkJoin([pClientes, pDifuntos]).subscribe(([clientes, difuntos]) => {
-        const mappedClientes = clientes.map(c => ({
+        let mappedClientes = clientes.map(c => ({
             ...c, _tipo: 'PROPIETARIO', _displayName: c.nombre, _displayId: c.dui
         }));
-        const mappedDifuntos = difuntos.map(d => ({
-            ...d, _tipo: 'DIFUNTO', _displayName: d.nombre, _displayId: d.dui || d.correlativo || 'N/A'
+        let mappedDifuntos = difuntos.map(d => ({
+            ...d, _tipo: 'DIFUNTO', _displayName: d.nombre, _displayId: d.dui || d.correlativo || 'No registrado'
         }));
+        
+        if (this.selectedCementerioId) {
+           // Si se selecciona un cementerio, filtramos por él.
+           // Difuntos: tienen cementerioNombre
+           mappedDifuntos = mappedDifuntos.filter(d => d.cementerioNombre === this.selectedCementerioNombre);
+           // Clientes: añadí getCementerioId() al backend para poder filtrar por ID
+           mappedClientes = mappedClientes.filter(c => c.cementerioId === this.selectedCementerioId);
+        }
+
         this.propietariosFiltrados = [...mappedClientes, ...mappedDifuntos];
       });
     }, 300);
@@ -481,6 +523,22 @@ export class PagosComponent implements OnInit {
   eliminar(id: number) {
     if (!confirm('¿Eliminar este registro de pago?')) return;
     this.http.delete(`${this.apiUrl}/${id}`).subscribe(() => this.cargarPagosPropietario());
+  }
+
+  get tienePagosPagados() {
+    return this.pagosPropietario.some(p => p.estado === 'PAGADO');
+  }
+
+  limpiarPagados() {
+    const pagados = this.pagosPropietario.filter(p => p.estado === 'PAGADO');
+    if (pagados.length === 0) return;
+    if (!confirm('¿Está seguro que desea limpiar todos los registros de pagos ya completados de este historial?')) return;
+    
+    const requests = pagados.map(p => this.http.delete(`${this.apiUrl}/${p.id}`));
+    forkJoin(requests).subscribe({
+      next: () => this.cargarPagosPropietario(),
+      error: () => alert('Ocurrió un error al limpiar algunos registros.')
+    });
   }
 
   cancelar() {

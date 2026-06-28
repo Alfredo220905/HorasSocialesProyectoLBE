@@ -26,8 +26,8 @@ public class ReportesController {
     // Permitido a operadores y administradores
     @PreAuthorize("hasAnyRole('ADMIN', 'INFORMATICA', 'OPERADOR')")
     @GetMapping("/ocupacion/excel")
-    public ResponseEntity<byte[]> descargarExcelOcupacion(Authentication authentication) {
-        byte[] bytes = reportesService.generarReporteOcupacionExcel();
+    public ResponseEntity<byte[]> descargarExcelOcupacion(Authentication authentication, @org.springframework.web.bind.annotation.RequestParam(required = false) Long cementerioId) {
+        byte[] bytes = reportesService.generarReporteOcupacionExcel(cementerioId);
         
         auditoriaService.registrarAccion(authentication.getName(), "REPORTE_DESCARGADO", "Reporte de ocupación en Excel");
 
@@ -39,8 +39,8 @@ public class ReportesController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'INFORMATICA', 'OPERADOR')")
     @GetMapping("/ocupacion/pdf")
-    public ResponseEntity<byte[]> descargarPdfOcupacion(Authentication authentication) {
-        byte[] bytes = reportesService.generarReporteOcupacionPdf();
+    public ResponseEntity<byte[]> descargarPdfOcupacion(Authentication authentication, @org.springframework.web.bind.annotation.RequestParam(required = false) Long cementerioId) {
+        byte[] bytes = reportesService.generarReporteOcupacionPdf(cementerioId);
 
         auditoriaService.registrarAccion(authentication.getName(), "REPORTE_DESCARGADO", "Reporte de ocupación en PDF");
 

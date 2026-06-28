@@ -93,7 +93,7 @@ input:focus, select:focus {
 }
 
 .modal-box {
-  background: white;
+  background: var(--card-bg);
   border-radius: 20px;
   padding: 2.5rem;
   width: 90%;
@@ -112,10 +112,10 @@ input:focus, select:focus {
 .modal-title {
   margin: 0 0 0.5rem;
   font-size: 1.4rem;
-  color: #1e293b;
+  color: var(--text-main);
 }
 .modal-msg {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.95rem;
   margin-bottom: 1.5rem;
   line-height: 1.5;
@@ -136,7 +136,7 @@ input:focus, select:focus {
   font-size: 0.9rem;
   transition: all 0.2s;
 }
-.btn-cancel { background: #f1f5f9; color: #475569; }
+.btn-cancel { background: var(--card-bg); color: var(--text-main); }
 .btn-cancel:hover { background: #e2e8f0; }
 .btn-confirm { background: #d73387; color: white; }
 .btn-confirm:hover { background: #bf2d76; }
@@ -151,28 +151,28 @@ input:focus, select:focus {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 1rem;
 }
 .btn-close-modal {
-  background: #f1f5f9;
+  background: var(--card-bg);
   border: none;
   width: 36px;
   height: 36px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 1rem;
 }
-.btn-close-modal:hover { background: #e2e8f0; color: #1e293b; }
+.btn-close-modal:hover { background: #e2e8f0; color: var(--text-main); }
 
 .ben-form {
-  background: #f8fafc;
+  background: var(--table-header-bg);
   padding: 1.2rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 .btn-sm-full { margin-top: 0.8rem; }
 
@@ -181,14 +181,14 @@ input:focus, select:focus {
 .ben-table {
   width: 100%;
   border-collapse: collapse;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   overflow: hidden;
 }
 .ben-table th {
   padding: 0.8rem 1rem;
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--card-bg);
+  color: var(--text-muted);
   font-weight: 700;
   font-size: 0.8rem;
   text-transform: uppercase;
@@ -196,8 +196,8 @@ input:focus, select:focus {
 }
 .ben-table td {
   padding: 0.8rem 1rem;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
   font-size: 0.9rem;
 }
 .ben-table tr:last-child td { border-bottom: none; }
@@ -227,12 +227,12 @@ input:focus, select:focus {
 .btn-delete:hover { background: #fecaca; }
 .btn-save { background: #ecfdf5; color: #059669; }
 .btn-save:hover { background: #d1fae5; }
-.btn-cancel-sm { background: #f1f5f9; color: #475569; }
+.btn-cancel-sm { background: var(--card-bg); color: var(--text-main); }
 .btn-cancel-sm:hover { background: #e2e8f0; }
 
 .empty-msg {
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-muted);
   padding: 2rem;
   font-style: italic;
 }

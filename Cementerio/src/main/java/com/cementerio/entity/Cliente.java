@@ -37,4 +37,9 @@ public class Cliente {
     @JoinColumn(name = "cementerio_id")
     @JsonIgnore // Evita loops infinitos de JSON
     private Cementerio cementerio;
+
+    @Transient
+    public Long getCementerioId() {
+        return this.cementerio != null ? this.cementerio.getId() : null;
+    }
 }
